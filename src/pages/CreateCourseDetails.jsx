@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { LuCircleCheck, LuLoader } from "react-icons/lu";
+import { LuCircleCheck, LuLoader, LuSave, LuSend } from "react-icons/lu";
 import { createCourse, submitCourseForReview } from "../services/courseService";
 import { getCategories } from "../services/categoryService";
 import { useCourse } from "../context/CourseContext";
@@ -11,15 +11,55 @@ import IntendedLearners from "../components/course/IntendedLearners";
 import CourseLandingPage from "../components/course/CourseLandingPage";
 import Curriculum from "../components/course/Curriculum";
 import Pricing from "../components/course/Pricing";
+import ConfirmDialog from "../components/ConfirmDialog";
+
+const STORAGE_KEY_TAB = "courseDraftActiveTab";
 
 const CreateCourseDetails = () => {
   const navigate = useNavigate();
-  const { course, setCourse, loadCourse, sections, loadSections } = useCourse();
-  const [activeTab, setActiveTab] = useState("learners");
+  const { course, setCourse, loadCourse, sections, loadSections, loadLectures } = useCourse();
+
+  // Restore active tab from localStorage on mount
+  const [activeTab, setActiveTabState] = useState(() => {
+    return localStorage.getItem(STORAGE_KEY_TAB) || "learners";
+  });
+
+  const [pendingTab, setPendingTab] = useState(null);
+  const [showNavWarning, setShowNavWarning] = useState(false);
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    localStorage.setItem(STORAGE_KEY_TAB, tab);
+  };
+
+  const handleTabChange = (targetTab) => {
+    if (targetTab === activeTab) return;
+    const isCurrentTabComplete = completedSteps.includes(activeTab);
+    if (!isCurrentTabComplete) {
+      setPendingTab(targetTab);
+      setShowNavWarning(true);
+    } else {
+      setActiveTab(targetTab);
+    }
+  };
+
+  const handleNextTab = () => {
+    const tabOrder = ["learners", "landing", "curriculum", "pricing"];
+    const curIdx = tabOrder.indexOf(activeTab);
+    if (curIdx !== -1 && curIdx < tabOrder.length - 1) {
+      handleTabChange(tabOrder[curIdx + 1]);
+    } else {
+      toast.success("Pricing step completed! Redirecting to course details...");
+      navigate(`/instructor/course/${courseId}`);
+    }
+  };
+
   const [courseId, setCourseId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isLoadingCourse, setIsLoadingCourse] = useState(true);
+  const [lectures, setLectures] = useState([]);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
   const [localDraft] = useState(() => {
     try {
@@ -29,6 +69,11 @@ const CreateCourseDetails = () => {
     }
   });
 
+  // Persist active tab to localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_TAB, activeTab);
+  }, [activeTab]);
+
   // Load sections dynamically when courseId becomes available
   useEffect(() => {
     if (courseId) {
@@ -37,6 +82,31 @@ const CreateCourseDetails = () => {
       });
     }
   }, [courseId, loadSections]);
+
+  // Load all lectures for each section to check for video preparation tracking/progress
+  useEffect(() => {
+    if (sections && sections.length > 0) {
+      let isMounted = true;
+      const fetchAllLectures = async () => {
+        const list = [];
+        for (const sec of sections) {
+          try {
+            const lecs = sec.lectures?.length > 0 ? sec.lectures : await loadLectures(sec._id);
+            if (lecs) list.push(...lecs);
+          } catch (e) {
+            console.error("Failed to fetch lectures for section:", sec._id, e);
+          }
+        }
+        if (isMounted) {
+          setLectures(list);
+        }
+      };
+      fetchAllLectures();
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [sections, loadLectures]);
 
   useEffect(() => {
     const draftId = localStorage.getItem("courseDraftId");
@@ -192,6 +262,13 @@ const CreateCourseDetails = () => {
     completedSteps.includes("curriculum") &&
     completedSteps.includes("pricing");
 
+  const hasProcessingVideo = useMemo(() => {
+    return lectures.some(lec => {
+      const hasVid = !!lec.video?.s3Prefix || !!lec.video?.masterPlaylist;
+      return hasVid && lec.video?.processingStatus !== "completed";
+    });
+  }, [lectures]);
+
   const handleSubmitForReview = async () => {
     if (!courseId) {
       toast.error("No course draft found.");
@@ -203,6 +280,11 @@ const CreateCourseDetails = () => {
       return;
     }
 
+    if (hasProcessingVideo) {
+      toast.error("Your course still has videos processing. Please wait until all videos are ready before submitting.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       await submitCourseForReview(courseId);
@@ -211,19 +293,22 @@ const CreateCourseDetails = () => {
       localStorage.removeItem("courseDraftId");
       localStorage.removeItem("courseDraft");
       localStorage.removeItem("courseDraftCreating");
+      localStorage.removeItem(STORAGE_KEY_TAB);
       navigate("/instructor/courses");
     } catch (err) {
       toast.error(err.message || "Failed to submit course for review.");
     } finally {
       setSubmitting(false);
+      setShowSubmitConfirm(false);
     }
   };
 
   const renderContent = () => {
     if (isLoadingCourse) {
       return (
-        <div className="py-24 text-center text-gray-500 font-medium">
-          Loading course draft...
+        <div className="py-24 text-center text-gray-500 font-medium flex flex-col items-center gap-3">
+          <LuLoader size={32} className="animate-spin text-purple-500" />
+          <span>Loading course draft...</span>
         </div>
       );
     }
@@ -235,7 +320,7 @@ const CreateCourseDetails = () => {
           <p>Start from the course wizard so we can create your draft and enable the curriculum editor.</p>
           <button
             onClick={() => navigate("/instructor/create-course")}
-            className="mt-4 inline-flex items-center justify-center rounded-md bg-purple-600 px-5 py-3 text-white hover:bg-purple-700 font-semibold"
+            className="mt-4 inline-flex items-center justify-center rounded-lg bg-purple-600 px-5 py-3 text-white hover:bg-purple-700 font-semibold transition cursor-pointer"
           >
             Back to wizard
           </button>
@@ -250,6 +335,7 @@ const CreateCourseDetails = () => {
             course={course}
             courseId={courseId}
             refreshCourse={() => loadCourse(courseId)}
+            onNext={handleNextTab}
           />
         );
       case "landing":
@@ -258,20 +344,21 @@ const CreateCourseDetails = () => {
             course={course}
             courseId={courseId}
             refreshCourse={() => loadCourse(courseId)}
+            onNext={handleNextTab}
           />
         );
       case "curriculum":
-        return <Curriculum course={course} />;
+        return <Curriculum course={course} onNext={handleNextTab} />;
       case "pricing":
         return (
-          <Pricing course={course} refreshCourse={() => loadCourse(courseId)} />
+          <Pricing course={course} refreshCourse={() => loadCourse(courseId)} onNext={handleNextTab} />
         );
       default:
         return null;
     }
   };
 
-  const handleSave = async () => {
+  const handleSaveDraft = async () => {
     if (!courseId) {
       toast.error("Please start from the wizard to create a course draft.");
       return;
@@ -289,67 +376,116 @@ const CreateCourseDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans">
       <CourseHeader course={course} />
 
-      <div className="max-w-7xl mx-auto flex">
+      <div className="flex">
         <CourseSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           completedSteps={completedSteps}
         />
 
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-8 max-w-5xl">
+          {/* Page header with action buttons */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Course Creation</h1>
-              <p className="text-gray-500 mt-1">
+              <h1 className="text-2xl font-bold text-gray-900">Course Creation</h1>
+              <p className="text-gray-400 mt-1 text-sm">
                 Build your course content, landing page, and curriculum.
               </p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving || isLoadingCourse}
-              className="inline-flex items-center justify-center rounded-md bg-purple-600 px-5 py-3 text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 font-semibold"
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
+
+            <div className="flex items-center gap-3">
+              {/* Save as Draft button — always visible */}
+              <button
+                onClick={handleSaveDraft}
+                disabled={saving || isLoadingCourse}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 font-semibold text-sm transition cursor-pointer"
+              >
+                <LuSave size={16} />
+                {saving ? "Saving..." : "Save as Draft"}
+              </button>
+
+              {/* Submit for Review button — only when ALL steps complete */}
+              {allStepsComplete && courseId && !hasProcessingVideo && (
+                <button
+                  onClick={() => setShowSubmitConfirm(true)}
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-5 py-2.5 transition text-sm cursor-pointer"
+                >
+                  <LuSend size={16} />
+                  {submitting ? "Submitting..." : "Submit for Review"}
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* All steps complete — show Submit for Review banner */}
+          {/* All steps complete — show banner */}
           {allStepsComplete && courseId && (
-            <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <LuCircleCheck size={24} className="text-green-600 shrink-0 mt-0.5" />
+            hasProcessingVideo ? (
+              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-center gap-3">
+                <LuLoader size={20} className="text-amber-600 shrink-0 animate-spin" />
                 <div>
-                  <p className="font-bold text-green-800 text-base">
-                    Your course is ready for review!
+                  <p className="font-bold text-amber-800 text-sm">
+                    Videos are still processing.
                   </p>
-                  <p className="text-green-700 text-sm mt-0.5">
-                    All sections are complete. Submit your course to the admin team for approval before publishing.
+                  <p className="text-amber-700 text-xs mt-0.5">
+                    Wait until all videos are ready before submitting.
                   </p>
                 </div>
               </div>
-              <button
-                onClick={handleSubmitForReview}
-                disabled={submitting}
-                className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold px-6 py-3 transition cursor-pointer"
-              >
-                {submitting ? (
-                  <>
-                    <LuLoader size={18} className="animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit for Review"
-                )}
-              </button>
-            </div>
+            ) : (
+              <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-3">
+                <LuCircleCheck size={20} className="text-green-600 shrink-0" />
+                <div>
+                  <p className="font-bold text-green-800 text-sm">
+                    Your course is ready for review!
+                  </p>
+                  <p className="text-green-700 text-xs mt-0.5">
+                    All sections are complete. Submit to the admin team for approval.
+                  </p>
+                </div>
+              </div>
+            )
           )}
 
-          <div className="bg-white rounded-xl shadow-sm border p-8">{renderContent()}</div>
+          <div className="bg-white rounded-xl shadow-sm border">
+            {renderContent()}
+          </div>
         </div>
       </div>
+
+      {/* Confirm submission dialog */}
+      <ConfirmDialog
+        open={showSubmitConfirm}
+        onConfirm={handleSubmitForReview}
+        onCancel={() => setShowSubmitConfirm(false)}
+        title="Submit for Review?"
+        message="Once submitted, your course will be reviewed by the admin team. You won't be able to edit it until the review is complete."
+        confirmText="Yes, Submit"
+        cancelText="Cancel"
+        variant="info"
+      />
+
+      {/* Navigation warning dialog */}
+      <ConfirmDialog
+        open={showNavWarning}
+        onConfirm={() => {
+          if (pendingTab) setActiveTab(pendingTab);
+          setShowNavWarning(false);
+          setPendingTab(null);
+        }}
+        onCancel={() => {
+          setShowNavWarning(false);
+          setPendingTab(null);
+        }}
+        title="Form Incomplete"
+        message="The current section has not been marked as complete. If you navigate away, this step will remain incomplete. Would you like to proceed anyway?"
+        confirmText="Proceed Anyway"
+        cancelText="Stay & Complete"
+        variant="warning"
+      />
     </div>
   );
 };

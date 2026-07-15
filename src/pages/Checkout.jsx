@@ -64,7 +64,7 @@ const Checkout = () => {
         key: order.key,
         amount: order.amount,
         currency: order.currency,
-        name: "Finest LMS",
+        name: "CourseHub",
         description: "Complete your course purchase",
         order_id: order.orderId,
         handler: async (response) => {

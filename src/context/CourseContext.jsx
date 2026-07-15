@@ -13,6 +13,7 @@ import {
   getSections,
   updateSection,
   deleteSection,
+  reorderSections as reorderSectionsAPI,
 } from "../services/sectionService";
 
 // Lecture Services
@@ -26,6 +27,7 @@ import {
   uploadLectureResource,
   deleteLectureResource,
   getLectureVideoStatus,
+  reorderLectures as reorderLecturesAPI,
 } from "../services/lectureSerivce";
 
 const CourseContext = createContext();
@@ -124,9 +126,9 @@ export const CourseProvider = ({ children }) => {
       prev.map((section) =>
         section._id === sectionId
           ? {
-              ...section,
-              ...updated,
-            }
+            ...section,
+            ...updated,
+          }
           : section
       )
     );
@@ -142,6 +144,21 @@ export const CourseProvider = ({ children }) => {
     );
   }, []);
 
+  const handleReorderSections = useCallback(async (courseId, orderedIds) => {
+    const reordered = await reorderSectionsAPI(courseId, orderedIds);
+
+    const formatted = reordered.map((section) => {
+      const existing = sections.find((s) => s._id === section._id);
+      return {
+        ...section,
+        lectures: existing?.lectures || [],
+      };
+    });
+
+    setSections(formatted);
+    return formatted;
+  }, [sections]);
+
   /* ======================================
       LECTURES
   ====================================== */
@@ -153,9 +170,9 @@ export const CourseProvider = ({ children }) => {
       prev.map((section) =>
         section._id === sectionId
           ? {
-              ...section,
-              lectures,
-            }
+            ...section,
+            lectures,
+          }
           : section
       )
     );
@@ -170,9 +187,9 @@ export const CourseProvider = ({ children }) => {
       prev.map((section) =>
         section._id === lecture.sectionId
           ? {
-              ...section,
-              lectures: [...(section.lectures || []), lecture],
-            }
+            ...section,
+            lectures: [...(section.lectures || []), lecture],
+          }
           : section
       )
     );
@@ -284,6 +301,20 @@ export const CourseProvider = ({ children }) => {
     return await getLectureVideoStatus(lectureId);
   }, []);
 
+  const handleReorderLectures = useCallback(async (sectionId, orderedIds) => {
+    const reordered = await reorderLecturesAPI(sectionId, orderedIds);
+
+    setSections((prev) =>
+      prev.map((section) =>
+        section._id === sectionId
+          ? { ...section, lectures: reordered }
+          : section
+      )
+    );
+
+    return reordered;
+  }, []);
+
   /* ======================================
       CONTEXT
   ====================================== */
@@ -317,6 +348,8 @@ export const CourseProvider = ({ children }) => {
       uploadLectureResource: handleUploadLectureResource,
       deleteLectureResource: handleDeleteLectureResource,
       getLectureVideoStatus: handleGetLectureVideoStatus,
+      reorderSections: handleReorderSections,
+      reorderLectures: handleReorderLectures,
     }),
     [
       loading,
@@ -329,6 +362,7 @@ export const CourseProvider = ({ children }) => {
       handleCreateSection,
       handleUpdateSection,
       handleDeleteSection,
+      handleReorderSections,
       loadLectures,
       handleCreateLecture,
       handleUpdateLecture,
@@ -338,6 +372,7 @@ export const CourseProvider = ({ children }) => {
       handleUploadLectureResource,
       handleDeleteLectureResource,
       handleGetLectureVideoStatus,
+      handleReorderLectures,
     ]
   );
 

@@ -211,7 +211,7 @@ const CategoryCourses = () => {
   const currentPage = pagination.currentPage || 1;
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen">
       {/* ═══════════════ HERO BANNER ═══════════════ */}
       <div className="bg-gradient-to-r from-gray-900 via-slate-900 to-purple-950 text-white relative overflow-hidden">
         {/* Decorative elements */}

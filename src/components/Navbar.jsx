@@ -1,8 +1,9 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../context/authContext";
 import { useCart } from "../context/CartContext";
+import { useNotifications } from "../context/NotificationContext";
 import { Link, useNavigate } from "react-router-dom";
-import { LuLogOut } from "react-icons/lu";
+import { LuLogOut, LuTrash2, LuCheckCheck } from "react-icons/lu";
 import { CgProfile } from "react-icons/cg";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import {
@@ -46,8 +47,147 @@ const getCategoryIcon = (slug) => {
   }
 };
 
+const formatRelativeTime = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+
+  if (isNaN(diffMs) || diffMs < 0) return "Just now";
+
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return "Just now";
+
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+
+  const diffDays = Math.floor(diffHr / 24);
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
+const NotificationMenu = ({ alignClass = "right-0" }) => {
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative p-1.5 text-gray-600 hover:text-purple-600 rounded-full hover:bg-gray-100 transition cursor-pointer flex items-center justify-center bg-transparent border-none focus:outline-none"
+        title="Notifications"
+      >
+        <HiOutlineBell size={20} />
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white leading-none">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className={`absolute ${alignClass} mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden`}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/70">
+            <span className="font-bold text-gray-800 text-sm">Notifications</span>
+            {unreadCount > 0 && (
+              <button
+                onClick={() => {
+                  try {
+                    markAllAsRead();
+                  } catch (err) {
+                    console.error("Mark all read failed:", err);
+                  }
+                }}
+                className="flex items-center gap-1 text-[11px] text-purple-600 hover:text-purple-700 font-semibold cursor-pointer border-none bg-transparent focus:outline-none"
+              >
+                <LuCheckCheck size={12} /> Mark all read
+              </button>
+            )}
+          </div>
+
+          {/* Contents */}
+          <div className="max-h-[320px] overflow-y-auto divide-y divide-gray-50">
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                <div className="p-3 bg-purple-50 rounded-full text-purple-500 mb-2">
+                  <HiOutlineBell size={24} />
+                </div>
+                <p className="text-xs font-semibold text-gray-705">No notifications yet</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">We'll notify you when actions occur</p>
+              </div>
+            ) : (
+              notifications.map((n) => (
+                <div
+                  key={n._id}
+                  onClick={() => {
+                    if (!n.isRead) {
+                      try {
+                        markAsRead(n._id);
+                      } catch (err) {
+                        console.error("Mark as read failed:", err);
+                      }
+                    }
+                  }}
+                  className={`group flex items-start gap-2.5 p-3 hover:bg-purple-50/20 transition cursor-pointer ${!n.isRead ? "bg-purple-50/10" : ""
+                    }`}
+                >
+                  {/* Purple Dot for unread */}
+                  {!n.isRead && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0" />
+                  )}
+
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={`text-xs break-words leading-relaxed ${!n.isRead ? "font-semibold text-gray-900" : "font-normal text-gray-600"}`}>
+                      {n.message}
+                    </p>
+                    <span className="text-[9px] text-gray-400 font-medium block mt-1">
+                      {formatRelativeTime(n.createdAt)}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      try {
+                        deleteNotification(n._id);
+                      } catch (err) {
+                        console.error("Delete notification failed:", err);
+                      }
+                    }}
+                    className="text-gray-400 hover:text-red-500 p-1 rounded-md opacity-0 group-hover:opacity-100 transition duration-150 cursor-pointer shrink-0 border-none bg-transparent focus:outline-none"
+                    title="Delete notification"
+                  >
+                    <LuTrash2 size={12} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+  const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase();
   const { cartCount } = useCart();
   const navigate = useNavigate();
 
@@ -58,12 +198,45 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
+  // Search suggestion states
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+
   const dropdownRef = useRef();
+  const searchRef = useRef();
+
+  // Fetch search suggestions from API when search field query changes
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    const delayDebounce = setTimeout(async () => {
+      setSuggestionsLoading(true);
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/courses/search/suggestions?q=${encodeURIComponent(searchQuery.trim())}`
+        );
+        const result = await res.json();
+        if (res.ok) {
+          setSuggestions(result.data || []);
+        }
+      } catch (err) {
+        console.error("Suggestions retrieval failed:", err);
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`);
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/categories`,
+        );
         const data = await res.json();
         if (res.ok) {
           setCategories(data.data || []);
@@ -75,21 +248,35 @@ const Navbar = () => {
     fetchCategories();
   }, []);
 
-  const displayCategories = categories.length > 0 ? categories : [
-    { _id: "development", name: "Development", slug: "development" },
-    { _id: "business", name: "Business", slug: "business" },
-    { _id: "it-and-software", name: "IT & Software", slug: "it-and-software" },
-    { _id: "design", name: "Design", slug: "design" },
-    { _id: "marketing", name: "Marketing", slug: "marketing" },
-    { _id: "photography", name: "Photography", slug: "photography" },
-    { _id: "health-and-fitness", name: "Health & Fitness", slug: "health-and-fitness" },
-    { _id: "music", name: "Music", slug: "music" }
-  ];
+  const displayCategories =
+    categories.length > 0
+      ? categories
+      : [
+        { _id: "development", name: "Development", slug: "development" },
+        { _id: "business", name: "Business", slug: "business" },
+        {
+          _id: "it-and-software",
+          name: "IT & Software",
+          slug: "it-and-software",
+        },
+        { _id: "design", name: "Design", slug: "design" },
+        { _id: "marketing", name: "Marketing", slug: "marketing" },
+        { _id: "photography", name: "Photography", slug: "photography" },
+        {
+          _id: "health-and-fitness",
+          name: "Health & Fitness",
+          slug: "health-and-fitness",
+        },
+        { _id: "music", name: "Music", slug: "music" },
+      ];
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSuggestions(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -106,7 +293,6 @@ const Navbar = () => {
   return (
     <>
       <div className="relative z-40 flex items-center justify-between px-4 md:px-6 py-3.5 shadow-sm bg-white border-b border-gray-100">
-        
         {/* LEFT SECTION (Logo & Find Courses) */}
         <div className="flex items-center gap-4 lg:gap-6">
           {/* Hamburger Menu (Mobile Only) */}
@@ -120,7 +306,7 @@ const Navbar = () => {
 
           <Link to="/" className="flex items-center">
             <h1 className="text-xl md:text-2xl font-bold text-purple-600 cursor-pointer tracking-tight">
-              LMS
+              CourseHub
             </h1>
           </Link>
 
@@ -134,9 +320,10 @@ const Navbar = () => {
               Find Courses
               <HiOutlineChevronDown
                 size={14}
-                className={`transition-transform duration-200 ${
-                  showFindCourses ? "rotate-180 text-purple-600" : "text-gray-500"
-                }`}
+                className={`transition-transform duration-200 ${showFindCourses
+                  ? "rotate-180 text-purple-600"
+                  : "text-gray-500"
+                  }`}
               />
             </button>
 
@@ -164,22 +351,89 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* SEARCH BAR (Desktop Only) */}
-        <div className="hidden lg:flex items-center w-[35%] xl:w-[45%] border border-gray-200 rounded-full px-4 py-2 bg-gray-50 hover:bg-white hover:border-purple-300 transition-all">
-          <HiOutlineSearch size={18} className="text-gray-500 cursor-pointer" onClick={triggerSearch} />
-          <input
-            type="text"
-            placeholder="Search for anything"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
-            className="w-full bg-transparent outline-none text-sm ml-2 text-gray-700 placeholder-gray-400"
-          />
+        {/* SEARCH BAR & AUTOCOMPLETE PLAY (Desktop Only) */}
+        <div ref={searchRef} className="hidden lg:relative lg:flex flex-col items-center w-[30%] xl:w-[40%] z-50">
+          <div className="flex items-center w-full border border-gray-200 rounded-full px-4 py-2 bg-gray-50 hover:bg-white hover:border-purple-300 transition-all">
+            <HiOutlineSearch
+              size={18}
+              className="text-gray-500 cursor-pointer shrink-0"
+              onClick={triggerSearch}
+            />
+            <input
+              type="text"
+              placeholder="Search for anything"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
+              className="w-full bg-transparent outline-none text-sm ml-2 text-gray-700 placeholder-gray-400"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSuggestions([]);
+                }}
+                className="text-gray-450 hover:text-gray-600 border-none bg-transparent cursor-pointer"
+              >
+                <HiOutlineX size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Autocomplete suggestion popover list */}
+          {showSuggestions && searchQuery.trim() && (
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl z-55 overflow-hidden max-h-72 overflow-y-auto">
+              {suggestionsLoading ? (
+                <div className="flex items-center gap-2 p-4 text-xs text-gray-550 justify-center">
+                  <span className="w-3.5 h-3.5 border-2 border-slate-350 border-t-purple-600 rounded-full animate-spin" />
+                  Loading suggestions...
+                </div>
+              ) : suggestions.length === 0 ? (
+                <div className="p-4 text-xs text-gray-500 text-center">
+                  No courses match "{searchQuery}"
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {suggestions.map((course) => (
+                    <button
+                      key={course._id}
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setSearchQuery("");
+                        navigate(`/api/public/courses/${course._id}`);
+                      }}
+                      className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-purple-50/40 transition cursor-pointer border-none bg-transparent"
+                    >
+                      <img
+                        src={course.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=120&q=80"}
+                        alt={course.title}
+                        className="w-12 h-8 object-cover rounded-lg bg-slate-100 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-800 truncate">{course.title}</p>
+                        <p className="text-[10px] text-gray-505 mt-0.5 capitalize">
+                          {course.categoryId?.name || "Category"} • By {course.instructorId?.userId?.firstName || "CourseHub"} {course.instructorId?.userId?.lastName || "Instructor"}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs font-extrabold text-purple-750">
+                          {course.discountPrice > 0 ? `₹${course.discountPrice}` : (course.price > 0 ? `₹${course.price}` : "Free")}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* RIGHT SECTION (Desktop Actions & Mobile Icons) */}
         <div className="flex items-center gap-3 md:gap-6">
-          
           {/* Desktop Right Links */}
           {user && (
             <div className="hidden lg:flex items-center gap-5 xl:gap-6">
@@ -214,8 +468,11 @@ const Navbar = () => {
                 My Learning
               </button>
 
-              <HiOutlineHeart size={20} className="cursor-pointer text-gray-600 hover:text-purple-600 transition" />
-              
+              <HiOutlineHeart
+                size={20}
+                className="cursor-pointer text-gray-600 hover:text-purple-600 transition"
+              />
+
               {user?.role === "student" && (
                 <button
                   type="button"
@@ -231,7 +488,7 @@ const Navbar = () => {
                   )}
                 </button>
               )}
-              <HiOutlineBell size={20} className="cursor-pointer text-gray-600 hover:text-purple-600 transition" />
+              <NotificationMenu alignClass="right-0" />
             </div>
           )}
 
@@ -241,20 +498,26 @@ const Navbar = () => {
               <div className="relative" ref={dropdownRef}>
                 <div
                   onClick={() => setOpen(!open)}
-                  className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center cursor-pointer border border-purple-200 overflow-hidden"
+                  className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer border border-purple-200 overflow-hidden bg-purple-600 text-white font-bold text-sm"
                 >
-                  <img
-                    src={user.avatar}
-                    alt={user.firstName}
-                    className="rounded-full w-full h-full object-cover"
-                  />
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.firstName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
                 </div>
 
                 {open && (
                   <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-1.5">
                     <div className="px-4 py-2 border-b border-gray-50 text-sm font-semibold text-gray-700">
                       {user.firstName} {user.lastName}
-                      <p className="text-[11px] text-purple-600 font-medium capitalize mt-0.5">{user.role}</p>
+                      <p className="text-[11px] text-purple-600 font-medium capitalize mt-0.5">
+                        {user.role}
+                      </p>
                     </div>
 
                     <button
@@ -325,6 +588,10 @@ const Navbar = () => {
               </Link>
             )}
 
+            {user && (
+              <NotificationMenu alignClass="-right-16" />
+            )}
+
             {/* Mobile Menu Trigger Avatar */}
             {user ? (
               <button
@@ -332,7 +599,11 @@ const Navbar = () => {
                 className="w-8 h-8 rounded-full border border-purple-200 overflow-hidden cursor-pointer"
                 aria-label="Open User Menu"
               >
-                <img src={user.avatar} alt={user.firstName} className="w-full h-full object-cover" />
+                <img
+                  src={user.avatar}
+                  alt={user.firstName}
+                  className="w-full h-full object-cover"
+                />
               </button>
             ) : (
               <Link
@@ -343,7 +614,6 @@ const Navbar = () => {
               </Link>
             )}
           </div>
-
         </div>
       </div>
 
@@ -380,15 +650,16 @@ const Navbar = () => {
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          
+
           {/* Side Drawer Panel */}
           <div className="fixed inset-y-0 left-0 z-50 w-72 bg-white p-6 shadow-2xl transition-transform duration-300 lg:hidden flex flex-col justify-between overflow-y-auto">
-            
             <div className="space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-gray-50">
                 <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                  <h2 className="text-xl font-bold text-purple-600 tracking-tight">LMS Catalog</h2>
+                  <h2 className="text-xl font-bold text-purple-600 tracking-tight">
+                    CourseHub Catalog
+                  </h2>
                 </Link>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -520,7 +791,6 @@ const Navbar = () => {
                 </button>
               </div>
             )}
-
           </div>
         </>
       )}

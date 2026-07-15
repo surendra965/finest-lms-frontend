@@ -192,7 +192,7 @@ export const deleteLectureResource = async (
 
 export const getLectureStream = async (lectureId) => {
   const response = await authFetch(`${API_URL}/api/stream/lecture/${lectureId}`);
-  
+
   // Parse response
   const data = await response.json();
 
@@ -219,4 +219,29 @@ export const getLectureVideoStatus = async (lectureId) => {
   }
 
   return data.data; // contains lectureId, status, error, streamUrl
+};
+
+/* ==========================================
+   REORDER LECTURES
+========================================== */
+
+export const reorderLectures = async (sectionId, orderedIds) => {
+  const response = await authFetch(
+    `${API_URL}/api/lectures/section/${sectionId}/reorder`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ orderedIds }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to reorder lectures");
+  }
+
+  return data.data;
 };

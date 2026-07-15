@@ -4,6 +4,7 @@ import { AiOutlineShoppingCart, AiFillStar } from "react-icons/ai";
 import { HiOutlineTicket } from "react-icons/hi";
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { useCart } from "../context/CartContext";
+import CourseCard from "../components/CourseCard";
 
 const CartItem = ({ item, onRemove }) => {
   const course = typeof item.courseId === "object" ? item.courseId : null;
@@ -11,10 +12,10 @@ const CartItem = ({ item, onRemove }) => {
   const instructor = course?.instructorId?.fullName || item.instructor || "Instructor";
   const thumbnail = course?.thumbnail || item.thumbnail || "https://via.placeholder.com/320x180?text=Course";
   const courseLink = course?._id ? `/api/public/courses/${course._id}` : `/api/public/courses/${item.courseId}`;
-const original =
+  const original =
     course?.price ?? item.price ?? 0;
 
-const price =
+  const price =
     course?.discountPrice ??
     course?.price ??
     item.price ??
@@ -62,56 +63,6 @@ const price =
         </div>
       </div>
     </div>
-  );
-};
-
-const PopularCourseCard = ({ course }) => {
-  const hash = course._id ? course._id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 100;
-  const rating = course.averageRating || (4.0 + (hash % 10) / 10).toFixed(1);
-  const reviewsCount = course.totalReviews || ((hash * 17) % 25000) + 120;
-  const instructorName = course.instructorId?.fullName || course.instructor || "Instructor";
-  const originalPrice = course.price ?? 0;
-  const discountPrice = course.discountPrice ?? course.price ?? 0;
-
-  return (
-    <Link 
-      to={`/api/public/courses/${course._id}`} 
-      className="w-[280px] shrink-0 flex flex-col group text-left"
-    >
-      <div className="w-full h-[160px] overflow-hidden rounded-lg bg-gray-100 border border-gray-200">
-        <img 
-          src={course.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80"} 
-          alt={course.title} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      </div>
-      <div className="mt-3 flex-1 flex flex-col">
-        <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight group-hover:text-purple-700">
-          {course.title}
-        </h3>
-        <p className="text-xs text-gray-500 mt-1 truncate">
-          {instructorName}
-        </p>
-        <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-sm font-extrabold text-amber-700">{rating}</span>
-          <div className="flex text-amber-500 text-xs">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <AiFillStar 
-                key={i} 
-                className={i < Math.floor(rating) ? "text-amber-500" : "text-gray-200"}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-gray-400">({reviewsCount.toLocaleString()})</span>
-        </div>
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-base font-bold text-gray-950">₹{discountPrice}</span>
-          {originalPrice > discountPrice && (
-            <span className="text-xs text-gray-400 line-through">₹{originalPrice}</span>
-          )}
-        </div>
-      </div>
-    </Link>
   );
 };
 
@@ -240,7 +191,7 @@ const Cart = () => {
                   >
                     <LuChevronLeft size={20} className="text-gray-700" />
                   </button>
-                  
+
                   {/* Slider Row */}
                   <div
                     ref={sliderRef}
@@ -253,7 +204,7 @@ const Cart = () => {
                       }
                     `}</style>
                     {popularCourses.map((course) => (
-                      <PopularCourseCard key={course._id} course={course} />
+                      <CourseCard key={course._id} course={course} variant="compact" />
                     ))}
                   </div>
 
@@ -280,58 +231,58 @@ const Cart = () => {
               ))}
             </div>
 
-              <aside className="space-y-5 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="rounded-3xl bg-white p-5 border space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <p className="text-sm font-semibold text-gray-700">Summary</p>
-                    <div className="text-xs font-semibold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full">{totalItems} item{totalItems === 1 ? "" : "s"}</div>
-                  </div>
+            <aside className="space-y-5 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="rounded-3xl bg-white p-5 border space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <p className="text-sm font-semibold text-gray-700">Summary</p>
+                  <div className="text-xs font-semibold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full">{totalItems} item{totalItems === 1 ? "" : "s"}</div>
+                </div>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Original Price:</span>
-                      <span className="font-semibold text-gray-900">₹{originalTotal.toFixed(2)}</span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Original Price:</span>
+                    <span className="font-semibold text-gray-900">₹{originalTotal.toFixed(2)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-600">
+                      <span>Discount Amount:</span>
+                      <span className="font-semibold">- ₹{discountAmount.toFixed(2)} ({discountPercentage}% off)</span>
                     </div>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-100 pt-3 flex items-baseline justify-between">
+                  <span className="text-base font-bold text-gray-900">Total:</span>
+                  <div className="text-right">
+                    <div className="text-3xl font-extrabold text-gray-950">₹{totalAmount.toFixed(2)}</div>
                     {discountAmount > 0 && (
-                      <div className="flex justify-between text-emerald-600">
-                        <span>Discount Amount:</span>
-                        <span className="font-semibold">- ₹{discountAmount.toFixed(2)} ({discountPercentage}% off)</span>
+                      <div className="text-xs text-emerald-600 font-semibold mt-1">
+                        You saved ₹{discountAmount.toFixed(2)}!
                       </div>
                     )}
                   </div>
-
-                  <div className="border-t border-gray-100 pt-3 flex items-baseline justify-between">
-                    <span className="text-base font-bold text-gray-900">Total:</span>
-                    <div className="text-right">
-                      <div className="text-3xl font-extrabold text-gray-950">₹{totalAmount.toFixed(2)}</div>
-                      {discountAmount > 0 && (
-                        <div className="text-xs text-emerald-600 font-semibold mt-1">
-                          You saved ₹{discountAmount.toFixed(2)}!
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </div>
+              </div>
 
-                <button
-                  onClick={() => navigate("/checkout")}
-                  className="w-full rounded-2xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
-                >
-                  Proceed to Checkout
-                </button>
+              <button
+                onClick={() => navigate("/checkout")}
+                className="w-full rounded-2xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
+              >
+                Proceed to Checkout
+              </button>
 
-                <button className="w-full rounded-2xl border border-purple-600 bg-white px-5 py-3 text-sm font-semibold text-purple-600 transition hover:bg-purple-50">
-                  Apply Coupon
-                </button>
+              <button className="w-full rounded-2xl border border-purple-600 bg-white px-5 py-3 text-sm font-semibold text-purple-600 transition hover:bg-purple-50">
+                Apply Coupon
+              </button>
 
-                <div className="rounded-3xl bg-gray-50 p-5 text-sm text-gray-600 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <HiOutlineTicket size={18} className="text-purple-600" />
-                    <span className="font-semibold text-gray-900">Secure checkout</span>
-                  </div>
-                  <p>We do not charge your card until you confirm the order.</p>
+              <div className="rounded-3xl bg-gray-50 p-5 text-sm text-gray-600 space-y-3">
+                <div className="flex items-center gap-2">
+                  <HiOutlineTicket size={18} className="text-purple-600" />
+                  <span className="font-semibold text-gray-900">Secure checkout</span>
                 </div>
-              </aside>
+                <p>We do not charge your card until you confirm the order.</p>
+              </div>
+            </aside>
           </div>
         )}
       </div>

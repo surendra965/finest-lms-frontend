@@ -25,6 +25,13 @@ const navItems = [
     icon: LuLayoutDashboard,
     path: "/admin",
   },
+  {
+    id: "category",
+    label: "Category",
+    description: "Create categories",
+    icon: LuLayoutDashboard,
+    path: "/categories",
+  },
 ];
 
 const AdminLayout = ({ children }) => {
@@ -48,7 +55,7 @@ const AdminLayout = ({ children }) => {
               <LuShieldCheck size={16} className="text-white" />
             </span>
             <div>
-              <p className="text-sm font-extrabold tracking-tight text-white">LMS Admin</p>
+              <p className="text-sm font-extrabold tracking-tight text-white">CourseHub Admin</p>
               <p className="text-[10px] text-gray-400 font-medium">Control Panel</p>
             </div>
           </Link>

@@ -214,7 +214,7 @@ const InstructorProfile = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+
           {/* LEFT SIDE */}
           <div>
             {/* FIRST NAME */}
@@ -238,11 +238,10 @@ const InstructorProfile = () => {
             <input
               name="headline"
               value={form.headline}
-              placeholder="Instructor at LMS"
+              placeholder="Instructor at CourseHub"
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${
-                errors.headline ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${errors.headline ? "border-red-500" : ""
+                }`}
             />
             {errors.headline && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.headline}</p>
@@ -256,9 +255,8 @@ const InstructorProfile = () => {
               value={form.biography}
               placeholder="Write about yourself..."
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded h-32 focus:outline-none ${
-                errors.biography ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded h-32 focus:outline-none ${errors.biography ? "border-red-500" : ""
+                }`}
             />
             {errors.biography && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.biography}</p>
@@ -275,9 +273,8 @@ const InstructorProfile = () => {
               value={form.website}
               placeholder="https://yourwebsite.com"
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${
-                errors.website ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${errors.website ? "border-red-500" : ""
+                }`}
             />
             {errors.website && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.website}</p>
@@ -291,9 +288,8 @@ const InstructorProfile = () => {
               value={form.linkedin}
               placeholder="linkedin profile"
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${
-                errors.linkedin ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${errors.linkedin ? "border-red-500" : ""
+                }`}
             />
             {errors.linkedin && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.linkedin}</p>
@@ -307,9 +303,8 @@ const InstructorProfile = () => {
               value={form.twitter}
               placeholder="twitter profile"
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${
-                errors.twitter ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${errors.twitter ? "border-red-500" : ""
+                }`}
             />
             {errors.twitter && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.twitter}</p>
@@ -323,9 +318,8 @@ const InstructorProfile = () => {
               value={form.youtube}
               placeholder="youtube channel"
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${
-                errors.youtube ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${errors.youtube ? "border-red-500" : ""
+                }`}
             />
             {errors.youtube && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.youtube}</p>
@@ -339,9 +333,8 @@ const InstructorProfile = () => {
               value={form.expertise}
               placeholder="React, Node, AI"
               onChange={handleChange}
-              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${
-                errors.expertise ? "border-red-500" : ""
-              }`}
+              className={`w-full mt-1 px-4 py-2 border rounded focus:outline-none ${errors.expertise ? "border-red-500" : ""
+                }`}
             />
             {errors.expertise && (
               <p className="text-red-500 text-xs mt-1 mb-3">{errors.expertise}</p>

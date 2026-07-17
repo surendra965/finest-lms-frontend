@@ -15,7 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 import CreateCourseWizard from "./pages/CreateCourseWizard";
 import CreateCourseDetails from "./pages/CreateCourseDetails";
 import InstructorCourseDetails from "./pages/InstructorCourseDetails";
-import EditCourse from "./pages/EditCourse";  
+import EditCourse from "./pages/EditCourse";
 import CategoryCourses from "./pages/CategoryCourses";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -26,6 +26,11 @@ import LearningCourse from "./pages/LearningCourse";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPendingCourses from "./pages/admin/AdminPendingCourses";
 import AdminCourseReview from "./pages/admin/AdminCourseReview";
+import AdminCreateCategory from "./pages/admin/AdminCreateCategory";
+
+import ChangePassword from "./pages/ChangePassword";
+
+import VerifyCertificate from "./pages/VerifyCertificate";
 
 // ✅ Centralized route config
 const HIDE_NAVBAR_ROUTES = [
@@ -47,7 +52,7 @@ function Layout() {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" className="mt-15" autoClose={3000} />
 
       {!shouldHideNavbar && <Navbar />}
 
@@ -59,6 +64,7 @@ function Layout() {
         <Route path="/api/auth/register" element={<Register />} />
         <Route path="/api/auth/forgot-password" element={<ForgotPassword />} />
         <Route path="/api/auth/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/verify-certificate/:code" element={<VerifyCertificate />} />
 
         {/* USER PROTECTED */}
         <Route
@@ -66,6 +72,14 @@ function Layout() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute>
+              <ChangePassword />
             </ProtectedRoute>
           }
         />
@@ -193,6 +207,14 @@ function Layout() {
           element={
             <ProtectedRoute role="admin">
               <AdminCourseReview />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCreateCategory />
             </ProtectedRoute>
           }
         />

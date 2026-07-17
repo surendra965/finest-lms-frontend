@@ -94,3 +94,29 @@ export const deleteSection = async (sectionId) => {
 
   return data;
 };
+
+/* ===========================================
+   REORDER SECTIONS
+   PUT /sections/course/:courseId/reorder
+=========================================== */
+
+export const reorderSections = async (courseId, orderedIds) => {
+  const response = await authFetch(
+    `${API_URL}/api/sections/course/${courseId}/reorder`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ orderedIds }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to reorder sections");
+  }
+
+  return data.data;
+};

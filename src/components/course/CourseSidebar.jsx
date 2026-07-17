@@ -5,8 +5,8 @@ import {
   LuDollarSign,
   LuCircleCheck,
   LuCircle,
+  LuLock,
 } from "react-icons/lu";
-import { toast } from "react-toastify";
 
 const sidebarItems = [
   {
@@ -14,24 +14,28 @@ const sidebarItems = [
     title: "Intended Learners",
     description: "Requirements & objectives",
     icon: LuGraduationCap,
+    step: 1,
   },
   {
     id: "landing",
-    title: "Course Landing Page",
+    title: "Landing Page",
     description: "Basic course information",
     icon: LuLayoutDashboard,
+    step: 2,
   },
   {
     id: "curriculum",
     title: "Curriculum",
     description: "Sections & lectures",
     icon: LuBookOpen,
+    step: 3,
   },
   {
     id: "pricing",
     title: "Pricing",
     description: "Price & discounts",
     icon: LuDollarSign,
+    step: 4,
   },
 ];
 
@@ -40,93 +44,127 @@ const CourseSidebar = ({
   setActiveTab,
   completedSteps = [],
 }) => {
+  const stepOrder = ["learners", "landing", "curriculum", "pricing"];
+
+  const isStepAccessible = (itemId) => {
+    return true;
+  };
+
+  const completedCount = completedSteps.length;
+  const progressPercent = Math.round((completedCount / 4) * 100);
+
   return (
-    <aside className="w-80 bg-white border-r min-h-screen font-sans">
-      <div className="px-6 py-6 border-b">
-        <h2 className="text-lg font-bold text-gray-900">
+    <aside className="w-72 bg-white border-r shrink-0 font-sans sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto flex flex-col">
+      {/* Header */}
+      <div className="px-5 py-5 border-b">
+        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
           Course Builder
         </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Complete every step before publishing.
+        <p className="text-xs text-gray-400 mt-1">
+          Complete every step to publish
         </p>
+
+        {/* Progress bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-xs mb-1.5">
+            <span className="text-gray-500 font-medium">
+              {completedCount} / 4 completed
+            </span>
+            <span className="font-bold text-purple-600">{progressPercent}%</span>
+          </div>
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="py-3">
+      {/* Nav Items */}
+      <nav className="flex-1 py-2">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
           const active = activeTab === item.id;
           const completed = completedSteps.includes(item.id);
+          const accessible = isStepAccessible(item.id);
 
           return (
             <button
               key={item.id}
               onClick={() => {
-                const stepOrder = ["learners", "landing", "curriculum", "pricing"];
-                const currentIndex = stepOrder.indexOf(item.id);
-
-                // Enforce that all previous steps must be completed
-                for (let i = 0; i < currentIndex; i++) {
-                  const prevStepId = stepOrder[i];
-                  if (!completedSteps.includes(prevStepId)) {
-                    const prevStepName = sidebarItems.find(si => si.id === prevStepId)?.title || prevStepId;
-                    toast.error(`Please complete the "${prevStepName}" section first.`);
-                    return;
-                  }
+                if (accessible) {
+                  setActiveTab(item.id);
                 }
-
-                setActiveTab(item.id);
               }}
-              className={`w-full flex items-start gap-4 px-6 py-4 text-left transition-all border-l-4
-                ${
-                  active
-                    ? "border-purple-600 bg-purple-50"
-                    : "border-transparent hover:bg-gray-50"
+              disabled={!accessible}
+              className={`
+                w-full flex items-center gap-3.5 px-5 py-4 text-left transition-all duration-200 border-l-[3px] group relative
+                ${active
+                  ? "border-purple-600 bg-purple-50/80"
+                  : accessible
+                    ? "border-transparent hover:bg-gray-50 hover:border-gray-200"
+                    : "border-transparent opacity-40 cursor-not-allowed"
                 }
               `}
             >
+              {/* Icon */}
               <div
-                className={`mt-1 ${
-                  active
-                    ? "text-purple-600"
-                    : "text-gray-500"
-                }`}
+                className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                  ${active
+                    ? "bg-purple-100 text-purple-600"
+                    : completed
+                      ? "bg-green-50 text-green-600"
+                      : "bg-gray-100 text-gray-400"
+                  }
+                `}
               >
-                <Icon size={22} />
+                <Icon size={18} />
               </div>
 
-              <div className="flex-1">
+              {/* Text */}
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <h3
-                    className={`font-semibold text-sm ${
-                      active
-                        ? "text-purple-700"
-                        : "text-gray-800"
-                    }`}
+                    className={`font-semibold text-sm truncate ${active
+                      ? "text-purple-700"
+                      : completed
+                        ? "text-gray-800"
+                        : "text-gray-600"
+                      }`}
                   >
                     {item.title}
                   </h3>
 
+                  {/* Status icon */}
                   {completed ? (
                     <LuCircleCheck
-                      size={18}
-                      className="text-green-600 shrink-0"
+                      size={16}
+                      className="text-green-500 shrink-0"
+                    />
+                  ) : !accessible ? (
+                    <LuLock
+                      size={14}
+                      className="text-gray-300 shrink-0"
                     />
                   ) : (
                     <LuCircle
-                      size={18}
-                      className="text-gray-300 hover:text-gray-400 shrink-0"
+                      size={16}
+                      className="text-gray-200 shrink-0"
                     />
                   )}
                 </div>
 
-                <p className="text-xs text-gray-500 mt-1">
-                  {item.description}
+                <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+                  {!accessible
+                    ? "Complete previous steps"
+                    : item.description}
                 </p>
               </div>
             </button>
           );
         })}
-      </div>
+      </nav>
     </aside>
   );
 };

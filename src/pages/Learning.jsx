@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEnrollment } from "../context/EnrollmentContext";
+import { authFetch } from "../utils/auth";
 import {
   LuBookOpen,
   LuTrendingUp,
@@ -60,13 +61,12 @@ const CourseCard = ({ courseId, title, thumbnail, pct, isCompleted }) => {
         />
         {/* Status badge */}
         <div
-          className={`absolute top-2.5 left-2.5 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm backdrop-blur-sm ${
-            isCompleted
-              ? "bg-green-600/90 text-white"
-              : pct > 0
+          className={`absolute top-2.5 left-2.5 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm backdrop-blur-sm ${isCompleted
+            ? "bg-green-600/90 text-white"
+            : pct > 0
               ? "bg-[#a435f0]/90 text-white"
               : "bg-gray-800/80 text-white"
-          }`}
+            }`}
         >
           {isCompleted ? (
             <><LuCircleCheck size={11} /> Completed</>
@@ -115,11 +115,10 @@ const CourseCard = ({ courseId, title, thumbnail, pct, isCompleted }) => {
             e.stopPropagation();
             navigate(`/learning/${courseId}`);
           }}
-          className={`w-full py-2 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition ${
-            isCompleted
-              ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              : "bg-[#a435f0] text-white hover:bg-[#8710d8]"
-          }`}
+          className={`w-full py-2 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition ${isCompleted
+            ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            : "bg-[#a435f0] text-white hover:bg-[#8710d8]"
+            }`}
         >
           {isCompleted ? "Review Course" : pct > 0 ? "Continue Learning" : "Start Learning"}
           <LuArrowRight size={14} />
@@ -151,18 +150,16 @@ const StatCard = ({ icon, value, label, color, sub }) => (
 const TabBtn = ({ active, onClick, icon, label, count }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-      active
-        ? "bg-[#a435f0] text-white border-[#a435f0] shadow-sm"
-        : "bg-white text-gray-600 border-gray-200 hover:border-[#a435f0] hover:text-[#a435f0]"
-    }`}
+    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all ${active
+      ? "bg-[#a435f0] text-white border-[#a435f0] shadow-sm"
+      : "bg-white text-gray-600 border-gray-200 hover:border-[#a435f0] hover:text-[#a435f0]"
+      }`}
   >
     {icon}
     {label}
     <span
-      className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-        active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
-      }`}
+      className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
+        }`}
     >
       {count}
     </span>
@@ -176,10 +173,24 @@ const Learning = () => {
   const { enrollments, loading, refreshEnrollments } = useEnrollment();
   const [searchQuery, setSearchQuery] = useState("");
   const [tab, setTab] = useState("all");
+  const [dashboardData, setDashboardData] = useState(null);
 
   // Refresh enrollments when this page mounts to get latest progress data
   useEffect(() => {
     refreshEnrollments();
+    const fetchDashboard = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL;
+        const res = await authFetch(`${API_URL}/api/dashboard/student`);
+        const result = await res.json();
+        if (res.ok) {
+          setDashboardData(result.data);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch student dashboard info:", err);
+      }
+    };
+    fetchDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -190,8 +201,8 @@ const Learning = () => {
         en.courseId && typeof en.courseId === "object"
           ? en.courseId
           : en.course && typeof en.course === "object"
-          ? en.course
-          : null;
+            ? en.course
+            : null;
 
       const idRaw = courseObj?._id ?? courseObj?.id ?? en.courseId ?? en._id;
       const courseId = idRaw?.toString?.() ?? String(idRaw ?? "");
@@ -220,9 +231,9 @@ const Learning = () => {
   const avgPending =
     pendingCourses.length > 0
       ? Math.round(
-          pendingCourses.reduce((acc, c) => acc + (100 - c.pct), 0) /
-            pendingCourses.length
-        )
+        pendingCourses.reduce((acc, c) => acc + (100 - c.pct), 0) /
+        pendingCourses.length
+      )
       : 0;
 
   // Filter by tab then search
@@ -230,8 +241,8 @@ const Learning = () => {
     tab === "pending"
       ? pendingCourses
       : tab === "completed"
-      ? completedCourses
-      : courses;
+        ? completedCourses
+        : courses;
 
   const filtered = tabFiltered.filter((c) =>
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -294,28 +305,28 @@ const Learning = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               icon={<LuLayoutGrid size={22} className="text-[#a435f0]" />}
-              value={courses.length}
+              value={dashboardData?.statistics?.enrolledCourses ?? courses.length}
               label="Total Enrolled"
               color="bg-[#a435f0]/10"
             />
             <StatCard
               icon={<LuTrendingUp size={22} className="text-orange-500" />}
-              value={pendingCourses.length}
+              value={dashboardData?.statistics?.inProgressCourses ?? pendingCourses.length}
               label="Pending Courses"
               sub={pendingCourses.length > 0 ? `avg. ${avgPending}% remaining` : undefined}
               color="bg-orange-50"
             />
             <StatCard
               icon={<LuCircleCheck size={22} className="text-green-600" />}
-              value={completedCourses.length}
+              value={dashboardData?.statistics?.completedCourses ?? completedCourses.length}
               label="Completed"
               color="bg-green-50"
             />
             <StatCard
               icon={<LuClock size={22} className="text-blue-500" />}
-              value={`${avgProgress}%`}
-              label="Avg. Progress"
-              sub="across all courses"
+              value={dashboardData ? `${dashboardData.statistics?.learningHours || 0} hrs` : `${avgProgress}%`}
+              label={dashboardData ? "Learning Hours" : "Avg. Progress"}
+              sub={dashboardData ? "certified study time" : "across all courses"}
               color="bg-blue-50"
             />
           </div>
@@ -365,6 +376,13 @@ const Learning = () => {
                   icon={<LuCircleCheck size={14} />}
                   label="Completed"
                   count={completedCourses.length}
+                />
+                <TabBtn
+                  active={tab === "certificates"}
+                  onClick={() => setTab("certificates")}
+                  icon={<LuGraduationCap size={14} />}
+                  label="Certificates"
+                  count={dashboardData?.statistics?.certificates ?? 0}
                 />
               </div>
 
@@ -422,8 +440,60 @@ const Learning = () => {
               </div>
             )}
 
-            {/* ── COURSE GRID ── */}
-            {filtered.length === 0 ? (
+            {/* ── COURSE GRID OR CERTIFICATE GRID ── */}
+            {tab === "certificates" ? (
+              (!dashboardData?.recentCertificates || dashboardData.recentCertificates.length === 0) ? (
+                <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
+                  <LuGraduationCap size={44} className="text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">No badges or verified certifications earned yet.</p>
+                  <p className="text-xs text-gray-400 mt-1">Complete a course to 100% to generate credentials!</p>
+                </div>
+              ) : (
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {dashboardData.recentCertificates.map((cert) => (
+                    <div
+                      key={cert._id}
+                      className="group bg-white border border-gray-200 rounded-3xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex flex-col p-5 gap-3"
+                    >
+                      <div className="relative overflow-hidden aspect-video bg-gray-100 shrink-0 rounded-2xl">
+                        <img
+                          src={cert.courseId?.thumbnail || "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80"}
+                          alt={cert.courseId?.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="flex flex-col flex-1 gap-2">
+                        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2">
+                          {cert.courseId?.title || "Course Completed"}
+                        </h3>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">
+                          ID: {cert.certificateNumber}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Issued: {new Date(cert.issuedAt).toLocaleDateString()}
+                        </p>
+                        <div className="mt-auto space-y-2 pt-2">
+                          <button
+                            onClick={() => window.open(cert.certificateUrl, "_blank")}
+                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 border-none cursor-pointer"
+                          >
+                            Download PDF
+                          </button>
+                          <a
+                            href={`${window.location.origin}/verify-certificate/${cert.verificationCode}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1 border border-slate-200 text-center"
+                          >
+                            Verify Credential
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : filtered.length === 0 ? (
               <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
                 <LuSearch size={36} className="text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">No courses match your search.</p>

@@ -5,6 +5,10 @@ import { authFetch } from "../utils/auth";
 import { toast } from "react-toastify";
 import { AiOutlineBook, AiFillCheckCircle, AiOutlineTeam, AiFillDollarCircle, AiOutlineSearch, AiOutlinePlus } from "react-icons/ai";
 import { BsFillPlayFill } from "react-icons/bs";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
+import CourseCard from "../components/CourseCard";
 
 /* ── Stat Card ── */
 const StatCard = ({ icon, label, value }) => (
@@ -21,8 +25,8 @@ const StatCard = ({ icon, label, value }) => (
 const StatusBadge = ({ status }) => {
   const map = {
     published: "bg-[#ecfdf5] text-[#065f46]",
-    draft:     "bg-[#fef9c3] text-[#854d0e]",
-    archived:  "bg-[#f3f4f6] text-[#374151]",
+    draft: "bg-[#fef9c3] text-[#854d0e]",
+    archived: "bg-[#f3f4f6] text-[#374151]",
   };
   return (
     <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded ${map[status] || map.draft}`}>
@@ -32,54 +36,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-/* ── Course Card ── */
-const CourseCard = ({ course, onClick }) => (
-  <div
-    onClick={onClick}
-    className="bg-white border border-[#d1d7dc] rounded-lg overflow-hidden cursor-pointer group hover:shadow-lg transition-shadow duration-200"
-  >
-    {/* Thumbnail */}
-    <div className="relative aspect-video overflow-hidden bg-[#f7f9fa]">
-      {course.thumbnail ? (
-        <img
-          src={course.thumbnail}
-          alt={course.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-[#6a6f73]">
-          <BsFillPlayFill size={40} className="text-[#6a6f73]" />
-        </div>
-      )}
-      <div className="absolute top-2 left-2">
-        <StatusBadge status={course.status} />
-      </div>
-    </div>
-
-    {/* Body */}
-    <div className="p-4">
-      <h3 className="text-[14px] font-bold text-[#1c1d1f] leading-snug line-clamp-2 mb-1 group-hover:text-[#a435f0] transition-colors">
-        {course.title}
-      </h3>
-      {course.subtitle && (
-        <p className="text-[12px] text-[#6a6f73] line-clamp-1 mb-3">{course.subtitle}</p>
-      )}
-
-      {/* Stats row */}
-      <div className="flex items-center justify-between text-[12px] text-[#6a6f73] pt-3 border-t border-[#e8e8e8]">
-        <span className="flex items-center gap-1">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          {(course.totalEnrollments ?? 0).toLocaleString()} students
-        </span>
-        {course.price !== undefined && (
-          <span className="font-bold text-[#1c1d1f]">₹{course.price}</span>
-        )}
-      </div>
-    </div>
-  </div>
-);
 
 /* ── Loading Skeleton ── */
 const SkeletonCard = () => (
@@ -98,29 +54,29 @@ const SkeletonCard = () => (
 ═══════════════════════════════════════════ */
 const InstructorHome = () => {
   const { user } = useContext(AuthContext);
-  const navigate  = useNavigate();
-  const API_URL   = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter,  setFilter]  = useState("all"); // all | published | draft
+  const [filter, setFilter] = useState("all"); // all | published | draft
 
   useEffect(() => {
     (async () => {
       try {
-        const res  = await authFetch(`${API_URL}/api/courses/my-courses`);
+        const res = await authFetch(`${API_URL}/api/courses/my-courses`);
         const data = await res.json();
         if (!res.ok) { toast.error(data.message || "Failed to load courses"); return; }
         setCourses(data.data || []);
       } catch { toast.error("Server error while fetching courses"); }
-      finally  { setLoading(false); }
+      finally { setLoading(false); }
     })();
   }, [API_URL]);
 
   /* Derived stats */
   const totalStudents = courses.reduce((acc, c) => acc + (c.totalEnrollments ?? 0), 0);
-  const totalRevenue  = courses.reduce((acc, c) => acc + ((c.price ?? 0) * (c.totalEnrollments ?? 0)), 0);
-  const published     = courses.filter((c) => c.status === "published").length;
+  const totalRevenue = courses.reduce((acc, c) => acc + ((c.price ?? 0) * (c.totalEnrollments ?? 0)), 0);
+  const published = courses.filter((c) => c.status === "published").length;
 
   /* Filtered list */
   const filtered = filter === "all" ? courses : courses.filter((c) => c.status === filter);
@@ -150,7 +106,7 @@ const InstructorHome = () => {
                   {user?.firstName} {user?.lastName}
                 </h1>
                 {user?.email && (
-                  <p className="text-[#6a6f73] text-xs mt-0.5">{user.email}</p>
+                  <p className="text-white text-xs mt-0.5">{user.email}</p>
                 )}
               </div>
             </div>
@@ -166,10 +122,10 @@ const InstructorHome = () => {
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatCard icon={<AiOutlineBook size={20} className="font-bold" />} label="Total Courses"    value={courses.length} />
-            <StatCard icon={<AiFillCheckCircle size={20} className="font-bold" />} label="Published"        value={published} />
-            <StatCard icon={<AiOutlineTeam size={20} className="font-bold" />} label="Total Students"   value={totalStudents.toLocaleString()} />
-            <StatCard icon={<AiFillDollarCircle size={20} className="font-bold" />} label="Est. Revenue"     value={`₹${totalRevenue.toLocaleString()}`} />
+            <StatCard icon={<AiOutlineBook size={20} className="font-bold" />} label="Total Courses" value={courses.length} />
+            <StatCard icon={<AiFillCheckCircle size={20} className="font-bold" />} label="Published" value={published} />
+            <StatCard icon={<AiOutlineTeam size={20} className="font-bold" />} label="Total Students" value={totalStudents.toLocaleString()} />
+            <StatCard icon={<AiFillDollarCircle size={20} className="font-bold" />} label="Est. Revenue" value={`₹${totalRevenue.toLocaleString()}`} />
           </div>
 
         </div>
@@ -181,37 +137,71 @@ const InstructorHome = () => {
       <div className="max-w-[1180px] mx-auto px-6 py-10">
 
         {/* Section header + filter tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7">
-          <h2 className="text-[20px] font-extrabold text-[#1c1d1f]">Your Courses</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7 border-b border-gray-400">
+          <h2 className="text-[25px] font-extrabold text-[#1c1d1f]">Your Courses</h2>
 
           {/* Filter tabs */}
           {!loading && courses.length > 0 && (
-            <div className="flex items-center bg-white border border-[#d1d7dc] rounded-lg overflow-hidden text-[13px] font-semibold">
-              {[
-                { key: "all",       label: "All" },
-                { key: "published", label: "Published" },
-                { key: "draft",     label: "Draft" },
-              ].map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setFilter(key)}
-                  className={`px-4 py-2 transition ${
-                    filter === key
-                      ? "bg-[#a435f0] text-white"
-                      : "text-[#6a6f73] hover:bg-[#f7f9fa]"
-                  }`}
-                >
-                  {label}
-                  {key !== "all" && (
-                    <span className={`ml-1.5 text-[11px] px-1.5 py-0.5 rounded-full ${
-                      filter === key ? "bg-white/20 text-white" : "bg-[#e8e8e8] text-[#6a6f73]"
-                    }`}>
-                      {courses.filter((c) => c.status === key).length}
+            <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Tabs
+                value={filter}
+                onChange={(event, newValue) => setFilter(newValue)}
+                textColor="secondary"
+                indicatorColor="secondary"
+                aria-label="filter courses by status"
+                sx={{
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#a435f0',
+                  },
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                    color: '#6a6f73',
+                    minWidth: 'auto',
+                    px: 3,
+                    '&.Mui-selected': {
+                      color: '#a435f0',
+                    },
+                  },
+                }}
+              >
+                <Tab
+                  value="all"
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      All
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#f3f4f6] text-gray-700 font-bold">
+                        {courses.length}
+                      </span>
                     </span>
-                  )}
-                </button>
-              ))}
-            </div>
+                  }
+                />
+                <Tab
+                  value="published"
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      Published
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#f3f4f6] text-gray-700 font-bold">
+                        {courses.filter((c) => c.status === "published").length}
+                      </span>
+                    </span>
+                  }
+                />
+                <Tab
+                  value="draft"
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      Draft
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#f3f4f6] text-gray-700 font-bold">
+                        {courses.filter((c) => c.status === "draft").length}
+                      </span>
+                    </span>
+                  }
+                />
+              </Tabs>
+            </Box>
           )}
         </div>
 
@@ -255,11 +245,13 @@ const InstructorHome = () => {
         {!loading && filtered.length > 0 && (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((course) => (
-              <CourseCard
+              <div
                 key={course._id}
-                course={course}
                 onClick={() => navigate(`/instructor/course/${course._id}`)}
-              />
+                className="cursor-pointer"
+              >
+                <CourseCard course={course} />
+              </div>
             ))}
 
             {/* "+ New Course" ghost card */}

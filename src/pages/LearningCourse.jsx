@@ -13,6 +13,11 @@ import {
   completeCourse,
 } from "../services/studentService";
 import {
+  getCertificateByCourse as getCertificateByCourseApi,
+  generateCertificate as generateCertificateApi,
+  downloadCertificate as downloadCertificateApi,
+} from "../services/certificateService";
+import {
   LuChevronLeft,
   LuChevronDown,
   LuChevronRight,
@@ -110,11 +115,10 @@ const ProgressRing = ({ pct, size = 56, stroke = 5 }) => {
 const LectureRow = ({ lecture, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-all duration-150 group ${
-      isActive
+    className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-all duration-150 group ${isActive
         ? "bg-[#2d2d2d] border-l-4 border-[#a435f0]"
         : "hover:bg-[#2d2d2d]/60 border-l-4 border-transparent"
-    }`}
+      }`}
   >
     {/* Status icon */}
     <span className="mt-0.5 shrink-0">
@@ -193,6 +197,8 @@ const LearningCourse = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [certificate, setCertificate] = useState(null);
+  const [certActionLoading, setCertActionLoading] = useState(false);
 
   const sidebarRef = useRef(null);
 
@@ -293,10 +299,10 @@ const LearningCourse = () => {
           const data = courseResult.value;
           console.log("[LearningCourse] course data:", JSON.stringify(data));
           setCourseData(data);
-          
+
           progressVal = data?.progressPercentage ?? data?.enrollment?.progressPercentage ?? 0;
           setProgress(progressVal);
-          
+
           rawSections = data.sections || data.curriculum || [];
           rawLectures = data.lectures || [];
           completedLecturesList = data.enrollment?.completedLectures || [];
@@ -339,6 +345,16 @@ const LearningCourse = () => {
         if (lectureToLoad) {
           await loadLecture(lectureToLoad, false);
         }
+
+        // Fetch certificate if course is completed
+        if (courseResult.status === "fulfilled" && courseResult.value?.enrollment?.status === "completed") {
+          try {
+            const cert = await getCertificateByCourseApi(id);
+            setCertificate(cert);
+          } catch (cErr) {
+            console.warn("Certificate not claimed yet:", cErr.message);
+          }
+        }
       } catch (err) {
         console.error("[LearningCourse] fatal error:", err);
         toast.error(err.message || "Unable to load course");
@@ -368,10 +384,54 @@ const LearningCourse = () => {
       await completeCourse(id);
       toast.success("🎉 Course completed! Congratulations!");
       setProgress(100);
+      setCourseData(prev => prev ? {
+        ...prev,
+        enrollment: prev.enrollment ? { ...prev.enrollment, status: "completed" } : prev.enrollment
+      } : prev);
+      try {
+        const cert = await generateCertificateApi(id);
+        setCertificate(cert);
+        toast.info("A verified completion certificate has been generated for you!");
+      } catch (certErr) {
+        console.warn("Auto cert creation failed:", certErr.message);
+      }
     } catch (err) {
       toast.error(err.message || "Failed to mark course complete");
     } finally {
       setCompleting(false);
+    }
+  };
+
+  const handleClaimCertificate = async () => {
+    if (certActionLoading) return;
+    setCertActionLoading(true);
+    try {
+      const data = await generateCertificateApi(id);
+      setCertificate(data);
+      toast.success("Certificate claimed successfully!");
+    } catch (err) {
+      toast.error(err.message || "Failed to claim certificate");
+    } finally {
+      setCertActionLoading(false);
+    }
+  };
+
+  const handleDownloadCertificate = async () => {
+    if (certActionLoading) return;
+    setCertActionLoading(true);
+    try {
+      const result = await downloadCertificateApi(id);
+      if (result?.url) {
+        window.open(result.url, "_blank");
+      } else if (certificate?.certificateUrl) {
+        window.open(certificate.certificateUrl, "_blank");
+      } else {
+        throw new Error("Download URL not found");
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to download certificate");
+    } finally {
+      setCertActionLoading(false);
     }
   };
 
@@ -514,11 +574,10 @@ const LearningCourse = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-3 px-4 text-sm font-semibold capitalize border-b-2 transition ${
-                    activeTab === tab
+                  className={`py-3 px-4 text-sm font-semibold capitalize border-b-2 transition ${activeTab === tab
                       ? "border-[#a435f0] text-[#a435f0]"
                       : "border-transparent text-zinc-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
@@ -580,19 +639,58 @@ const LearningCourse = () => {
                 </div>
 
                 {/* Complete course CTA */}
-                {isAllComplete && (
-                  <div className="bg-gradient-to-br from-[#a435f0]/20 to-[#6d28d9]/10 border border-[#a435f0]/30 rounded-xl p-6 text-center">
+                {isAllComplete && courseData?.enrollment?.status !== "completed" && (
+                  <div className="bg-gradient-to-br from-[#a435f0]/20 to-[#6d28d9]/10 border border-[#a435f0]/30 rounded-xl p-6 text-center mt-6">
                     <LuTrophy size={40} className="text-[#a435f0] mx-auto mb-3" />
                     <h3 className="text-lg font-bold text-white mb-1">You've completed all lectures!</h3>
                     <p className="text-zinc-400 text-sm mb-4">Mark the course as complete to celebrate your achievement.</p>
                     <button
                       onClick={handleCompleteCourse}
                       disabled={completing}
-                      className="px-6 py-2.5 bg-[#a435f0] hover:bg-[#8710d8] text-white rounded-md text-sm font-bold transition disabled:opacity-60 flex items-center gap-2 mx-auto"
+                      className="px-6 py-2.5 bg-[#a435f0] hover:bg-[#8710d8] text-white rounded-md text-sm font-bold transition disabled:opacity-60 flex items-center gap-2 mx-auto cursor-pointer"
                     >
                       {completing ? <LuLoaderCircle size={16} className="animate-spin" /> : <LuTrophy size={16} />}
                       {completing ? "Completing..." : "Complete Course"}
                     </button>
+                  </div>
+                )}
+
+                {/* Course Completed & Certificate panel */}
+                {courseData?.enrollment?.status === "completed" && (
+                  <div className="bg-gradient-to-br from-[#16a34a]/10 to-[#10b981]/5 border border-[#10b981]/20 rounded-2xl p-6 text-center mt-6">
+                    <LuTrophy size={40} className="text-emerald-500 mx-auto mb-3" />
+                    <h3 className="text-lg font-bold text-white mb-1">Congratulations on completing the course!</h3>
+                    <p className="text-zinc-400 text-sm mb-5">Click below to generate and download your verified certificate of completion.</p>
+
+                    {certActionLoading ? (
+                      <button disabled className="px-6 py-2.5 bg-zinc-700 text-white rounded-xl text-sm font-bold flex items-center gap-2 mx-auto">
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading certificate...
+                      </button>
+                    ) : certificate ? (
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button
+                          onClick={handleDownloadCertificate}
+                          className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition flex items-center gap-2 cursor-pointer border-none shadow-md shadow-emerald-950"
+                        >
+                          Download Certificate PDF
+                        </button>
+                        <a
+                          href={`${window.location.origin}/verify-certificate/${certificate.verificationCode}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-sm font-semibold transition border border-zinc-700"
+                        >
+                          Verify Certificate
+                        </a>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleClaimCertificate}
+                        className="px-6 py-2.5 bg-[#a435f0] hover:bg-[#8710d8] text-white rounded-xl text-sm font-bold transition flex items-center gap-2 mx-auto cursor-pointer border-none shadow-md shadow-purple-950"
+                      >
+                        Claim My Certificate
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -624,9 +722,8 @@ const LearningCourse = () => {
                             <button
                               key={lec.lectureId}
                               onClick={() => loadLecture(lec.lectureId, !lec.completed)}
-                              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition ${
-                                selectedLecture === lec.lectureId ? "bg-[#a435f0]/10" : "hover:bg-[#2d2d2d]"
-                              }`}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition ${selectedLecture === lec.lectureId ? "bg-[#a435f0]/10" : "hover:bg-[#2d2d2d]"
+                                }`}
                             >
                               {lec.completed ? (
                                 <span className="w-5 h-5 rounded-full bg-[#a435f0] flex items-center justify-center shrink-0">

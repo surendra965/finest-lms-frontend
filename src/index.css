@@ -5,6 +5,7 @@
     "Segoe UI", sans-serif;
   color: #1c1d1f;
   background: #f7f9fa;
+  scrollbar-width: none;
 }
 
 body {

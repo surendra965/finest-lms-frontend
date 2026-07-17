@@ -309,7 +309,6 @@ const CreateCourseWizard = () => {
         title="Form Incomplete"
         message={validationError || "Please fill/select the required field before moving to the next step."}
         confirmText="OK"
-        cancelText=""
         variant="info"
       />
     </div>

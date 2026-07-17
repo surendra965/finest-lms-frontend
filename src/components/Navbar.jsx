@@ -206,6 +206,52 @@ const Navbar = () => {
   const dropdownRef = useRef();
   const searchRef = useRef();
 
+  const [recentSearches, setRecentSearches] = useState([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("recentSearches");
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load recent searches:", e);
+    }
+  }, []);
+
+  const removeRecentSearch = (term) => {
+    const updated = recentSearches.filter((t) => t !== term);
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
+  };
+
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.setItem("recentSearches", JSON.stringify([]));
+  };
+
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleGuestLink = (anchorId) => {
+    setMobileMenuOpen(false);
+    if (window.location.pathname === "/") {
+      const el = document.getElementById(anchorId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate(`/#${anchorId}`);
+    }
+  };
+
   // Fetch search suggestions from API when search field query changes
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -285,14 +331,221 @@ const Navbar = () => {
 
   const triggerSearch = () => {
     if (searchQuery.trim()) {
-      navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
+      const term = searchQuery.trim();
+      const updated = [term, ...recentSearches.filter((t) => t !== term)].slice(0, 5);
+      setRecentSearches(updated);
+      localStorage.setItem("recentSearches", JSON.stringify(updated));
+      navigate(`/courses?search=${encodeURIComponent(term)}`);
       setMobileSearchOpen(false);
+      setShowSuggestions(false);
     }
   };
 
+  if (!user) {
+    return (
+      <>
+        <div className={`sticky top-0 z-50 transition-all duration-300 flex items-center justify-between px-4 md:px-6 py-3.5 ${isScrolled
+          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100/50"
+          : "bg-white border-b border-gray-100"
+          }`}>
+          {/* LEFT SECTION (Logo) */}
+          <div className="flex items-center gap-3">
+            {/* Hamburger Menu (Mobile Only) */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-1 text-gray-700 hover:text-[#A259FF] focus:outline-none cursor-pointer"
+              aria-label="Open Menu"
+            >
+              <HiOutlineMenu size={24} />
+            </button>
+
+            <Link to="/" className="flex items-center gap-2 select-none">
+              <span className="w-8 h-8 rounded-lg bg-[#A259FF] flex items-center justify-center text-white text-base font-black shrink-0 shadow-md shadow-purple-200">
+                F
+              </span>
+              <h1 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">
+                Fine Course Mart
+              </h1>
+            </Link>
+          </div>
+
+          {/* CENTER SECTION (Nav Links) */}
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs font-black text-gray-500 uppercase tracking-wider">
+            <Link
+              to="/"
+              onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className="hover:text-[#A259FF] transition duration-150"
+            >
+              Home
+            </Link>
+            <button onClick={() => handleGuestLink("trending-courses")} className="hover:text-[#A259FF] transition duration-150 cursor-pointer bg-transparent border-none font-black text-xs uppercase tracking-wider">Courses</button>
+            <button onClick={() => handleGuestLink("learning-categories")} className="hover:text-[#A259FF] transition duration-150 cursor-pointer bg-transparent border-none font-black text-xs uppercase tracking-wider">Categories</button>
+            <button onClick={() => handleGuestLink("featured-instructors")} className="hover:text-[#A259FF] transition duration-150 cursor-pointer bg-transparent border-none font-black text-xs uppercase tracking-wider">Instructors</button>
+            <button onClick={() => handleGuestLink("about")} className="hover:text-[#A259FF] transition duration-150 cursor-pointer bg-transparent border-none font-black text-xs uppercase tracking-wider">About</button>
+          </nav>
+
+          {/* RIGHT SECTION */}
+          <div className="flex items-center gap-4">
+            {/* Search inputs */}
+            <div ref={searchRef} className="hidden lg:relative lg:flex flex-col items-center w-40 xl:w-56 z-55">
+              <div className="flex items-center w-full border border-gray-200 rounded-full px-3 py-1.5 bg-gray-50 hover:bg-white hover:border-purple-300 transition-all select-none">
+                <HiOutlineSearch
+                  size={16}
+                  className="text-gray-500 cursor-pointer shrink-0"
+                  onClick={triggerSearch}
+                />
+                <input
+                  type="text"
+                  placeholder="Search courses..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
+                  className="w-full bg-transparent outline-none text-xs ml-2 text-gray-700 placeholder-gray-400 font-semibold"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSuggestions([]);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer"
+                  >
+                    <HiOutlineX size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Suggestions popover */}
+              {showSuggestions && (
+                <div className="absolute left-0 right-0 top-full mt-2 w-72 bg-white border border-gray-100 rounded-2xl shadow-xl z-55 overflow-hidden max-h-96 overflow-y-auto">
+                  {searchQuery.trim() ? (
+                    suggestionsLoading ? (
+                      <div className="flex items-center gap-2 p-4 text-xs text-gray-500 justify-center">
+                        <span className="w-3.5 h-3.5 border-2 border-slate-300 border-t-[#A259FF] rounded-full animate-spin" />
+                        Loading...
+                      </div>
+                    ) : suggestions.length === 0 ? (
+                      <div className="p-4 text-xs text-gray-500 text-center">
+                        No matches found
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-50">
+                        {suggestions.map((course) => (
+                          <button
+                            key={course._id}
+                            onClick={() => {
+                              setShowSuggestions(false);
+                              setSearchQuery("");
+                              navigate(`/api/public/courses/${course._id}`);
+                            }}
+                            className="w-full flex items-center gap-2.5 p-3 text-left hover:bg-purple-50/40 transition cursor-pointer border-none bg-transparent"
+                          >
+                            <img
+                              src={course.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=120&q=80"}
+                              alt={course.title}
+                              className="w-10 h-7 object-cover rounded bg-slate-100 shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-bold text-gray-800 truncate">{course.title}</p>
+                              <p className="text-[9px] text-gray-400 truncate">
+                                By {course.instructorId?.userId?.firstName || "Instructor"}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  ) : (
+                    <div className="p-4 bg-white text-xs text-gray-400 text-center font-medium italic">
+                      Type to search course catalogue
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Link
+              to="/api/auth/login"
+              className="px-4 py-2 border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition duration-150"
+            >
+              Login
+            </Link>
+            <Link
+              to="/api/auth/register"
+              className="px-4 py-2 bg-[#A259FF] text-white text-xs font-bold rounded-xl hover:bg-[#8e45ec] shadow-lg shadow-purple-100 transition duration-150"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Menu Drawer for Guests */}
+        {mobileMenuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white p-6 shadow-2xl transition duration-300 lg:hidden flex flex-col justify-between overflow-y-auto block">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-gray-50">
+                  <h2 className="text-base font-black text-gray-900">Fine Course Mart</h2>
+                  <button onClick={() => setMobileMenuOpen(false)} className="text-gray-450 hover:text-gray-700 font-bold p-1">
+                    <HiOutlineX size={20} />
+                  </button>
+                </div>
+
+                <nav className="flex flex-col gap-2 pt-2 text-sm font-extrabold text-gray-650">
+                  <Link
+                    to="/"
+                    onClick={(e) => {
+                      setMobileMenuOpen(false);
+                      if (window.location.pathname === "/") {
+                        e.preventDefault();
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className="px-3 py-2 rounded-xl hover:bg-purple-50 hover:text-[#A259FF] transition"
+                  >
+                    Home
+                  </Link>
+                  <button onClick={() => handleGuestLink("trending-courses")} className="text-left px-3 py-2 rounded-xl hover:bg-purple-50 hover:text-[#A259FF] transition cursor-pointer bg-transparent border-none font-extrabold text-sm text-gray-650">Courses</button>
+                  <button onClick={() => handleGuestLink("learning-categories")} className="text-left px-3 py-2 rounded-xl hover:bg-purple-50 hover:text-[#A259FF] transition cursor-pointer bg-transparent border-none font-extrabold text-sm text-gray-650">Categories</button>
+                  <button onClick={() => handleGuestLink("featured-instructors")} className="text-left px-3 py-2 rounded-xl hover:bg-purple-50 hover:text-[#A259FF] transition cursor-pointer bg-transparent border-none font-extrabold text-sm text-gray-650">Instructors</button>
+                  <button onClick={() => handleGuestLink("about")} className="text-left px-3 py-2 rounded-xl hover:bg-purple-50 hover:text-[#A259FF] transition cursor-pointer bg-transparent border-none font-extrabold text-sm text-gray-655 font-sans">About</button>
+                </nav>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100 flex flex-col gap-2 select-none">
+                <Link to="/api/auth/login" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2.5 border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 rounded-xl">
+                  Login
+                </Link>
+                <Link to="/api/auth/register" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2.5 bg-[#A259FF] text-white text-xs font-bold hover:bg-[#8e45ec] rounded-xl shadow-md">
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
+
   return (
     <>
-      <div className="relative z-40 flex items-center justify-between px-4 md:px-6 py-3.5 shadow-sm bg-white border-b border-gray-100">
+      <div className={`sticky top-0 z-40 transition-all duration-300 flex items-center justify-between px-4 md:px-6 py-3.5 ${isScrolled
+          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100/50"
+          : "bg-white border-b border-gray-100"
+        }`}>
         {/* LEFT SECTION (Logo & Find Courses) */}
         <div className="flex items-center gap-4 lg:gap-6">
           {/* Hamburger Menu (Mobile Only) */}
@@ -304,9 +557,12 @@ const Navbar = () => {
             <HiOutlineMenu size={24} />
           </button>
 
-          <Link to="/" className="flex items-center">
-            <h1 className="text-xl md:text-2xl font-bold text-purple-600 cursor-pointer tracking-tight">
-              CourseHub
+          <Link to="/" className="flex items-center gap-2 select-none">
+            <span className="w-8 h-8 rounded-lg bg-[#A259FF] flex items-center justify-center text-white text-base font-black shrink-0 shadow-md shadow-purple-200">
+              F
+            </span>
+            <h1 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">
+              Fine Course Mart
             </h1>
           </Link>
 
@@ -352,7 +608,7 @@ const Navbar = () => {
         </div>
 
         {/* SEARCH BAR & AUTOCOMPLETE PLAY (Desktop Only) */}
-        <div ref={searchRef} className="hidden lg:relative lg:flex flex-col items-center w-[30%] xl:w-[40%] z-50">
+        <div ref={searchRef} className="hidden lg:relative lg:flex flex-col items-center w-[20%] xl:w-[25%] z-50">
           <div className="flex items-center w-full border border-gray-200 rounded-full px-4 py-2 bg-gray-50 hover:bg-white hover:border-purple-300 transition-all">
             <HiOutlineSearch
               size={18}
@@ -385,47 +641,127 @@ const Navbar = () => {
           </div>
 
           {/* Autocomplete suggestion popover list */}
-          {showSuggestions && searchQuery.trim() && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl z-55 overflow-hidden max-h-72 overflow-y-auto">
-              {suggestionsLoading ? (
-                <div className="flex items-center gap-2 p-4 text-xs text-gray-550 justify-center">
-                  <span className="w-3.5 h-3.5 border-2 border-slate-350 border-t-purple-600 rounded-full animate-spin" />
-                  Loading suggestions...
-                </div>
-              ) : suggestions.length === 0 ? (
-                <div className="p-4 text-xs text-gray-500 text-center">
-                  No courses match "{searchQuery}"
-                </div>
+          {showSuggestions && (
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl z-55 overflow-hidden max-h-96 overflow-y-auto duration-200">
+              {searchQuery.trim() ? (
+                suggestionsLoading ? (
+                  <div className="flex items-center gap-2 p-4 text-xs text-gray-550 justify-center">
+                    <span className="w-3.5 h-3.5 border-2 border-slate-350 border-t-purple-600 rounded-full animate-spin" />
+                    Loading suggestions...
+                  </div>
+                ) : suggestions.length === 0 ? (
+                  <div className="p-4 text-xs text-gray-500 text-center">
+                    No courses match "{searchQuery}"
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {suggestions.map((course) => (
+                      <button
+                        key={course._id}
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          setSearchQuery("");
+                          navigate(`/api/public/courses/${course._id}`);
+                        }}
+                        className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-purple-50/40 transition cursor-pointer border-none bg-transparent"
+                      >
+                        <img
+                          src={course.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=120&q=80"}
+                          alt={course.title}
+                          className="w-12 h-8 object-cover rounded-lg bg-slate-100 shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800 truncate">{course.title}</p>
+                          <p className="text-[10px] text-gray-505 mt-0.5 capitalize">
+                            {course.categoryId?.name || "Category"} • By {course.instructorId?.userId?.firstName || "Fine Course Mart"} {course.instructorId?.userId?.lastName || "Instructor"}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs font-extrabold text-purple-750">
+                            {course.discountPrice > 0 ? `₹${course.discountPrice}` : (course.price > 0 ? `₹${course.price}` : "Free")}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )
               ) : (
-                <div className="divide-y divide-gray-50">
-                  {suggestions.map((course) => (
-                    <button
-                      key={course._id}
-                      onClick={() => {
-                        setShowSuggestions(false);
-                        setSearchQuery("");
-                        navigate(`/api/public/courses/${course._id}`);
-                      }}
-                      className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-purple-50/40 transition cursor-pointer border-none bg-transparent"
-                    >
-                      <img
-                        src={course.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=120&q=80"}
-                        alt={course.title}
-                        className="w-12 h-8 object-cover rounded-lg bg-slate-100 shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-gray-800 truncate">{course.title}</p>
-                        <p className="text-[10px] text-gray-505 mt-0.5 capitalize">
-                          {course.categoryId?.name || "Category"} • By {course.instructorId?.userId?.firstName || "CourseHub"} {course.instructorId?.userId?.lastName || "Instructor"}
-                        </p>
+                <div className="p-4 bg-white">
+                  {/* Recent Searches */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2 pb-1 border-b border-gray-50">
+                      <span className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5 uppercase tracking-wider">
+                        Recent Searches
+                      </span>
+                      {recentSearches.length > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearRecentSearches();
+                          }}
+                          className="text-[11px] font-semibold text-purple-600 hover:text-purple-700 cursor-pointer bg-transparent border-none outline-none"
+                        >
+                          Clear All
+                        </button>
+                      )}
+                    </div>
+                    {recentSearches.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic py-1 px-1">No recent searches</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {recentSearches.map((term, index) => (
+                          <div key={index} className="flex items-center bg-gray-50 border border-gray-100 hover:border-purple-200 rounded-full px-3 py-1 transition-all duration-200">
+                            <button
+                              onClick={() => {
+                                setSearchQuery(term);
+                                navigate(`/courses?search=${encodeURIComponent(term)}`);
+                                setShowSuggestions(false);
+                              }}
+                              className="text-xs font-medium text-gray-700 hover:text-purple-600 bg-transparent border-none cursor-pointer outline-none mr-1.5 flex items-center gap-1"
+                            >
+                              <span className="text-[10px] text-gray-400">🕒</span>
+                              {term}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeRecentSearch(term);
+                              }}
+                              className="text-gray-400 hover:text-red-500 bg-transparent border-none cursor-pointer text-[10px] leading-none p-0 focus:outline-none"
+                              title="Delete search"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs font-extrabold text-purple-750">
-                          {course.discountPrice > 0 ? `₹${course.discountPrice}` : (course.price > 0 ? `₹${course.price}` : "Free")}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+                    )}
+                  </div>
+
+                  {/* Trending Searches */}
+                  <div>
+                    <span className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5 uppercase tracking-wider mb-2">
+                      🔥 Trending Searches
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {["React", "Javascript", "Python", "Data Science", "Figma", "Web Development"].map((trend) => (
+                        <button
+                          key={trend}
+                          onClick={() => {
+                            setSearchQuery(trend);
+                            const updated = [trend, ...recentSearches.filter(t => t !== trend)].slice(0, 5);
+                            setRecentSearches(updated);
+                            localStorage.setItem("recentSearches", JSON.stringify(updated));
+                            navigate(`/courses?search=${encodeURIComponent(trend)}`);
+                            setShowSuggestions(false);
+                          }}
+                          className="text-xs font-semibold text-purple-650 bg-purple-50 hover:bg-purple-100 border border-purple-100 hover:border-purple-200 rounded-full px-3 py-1 transition duration-150 cursor-pointer outline-none"
+                        >
+                          {trend}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -462,16 +798,18 @@ const Navbar = () => {
               )}
 
               <button
+                onClick={() => navigate("/all-courses")}
+                className="text-sm xl:text-base font-semibold text-gray-700 hover:text-purple-600 cursor-pointer"
+              >
+                All Courses
+              </button>
+
+              <button
                 onClick={() => navigate("/learning")}
                 className="text-sm xl:text-base font-semibold text-gray-700 hover:text-purple-600 cursor-pointer"
               >
                 My Learning
               </button>
-
-              <HiOutlineHeart
-                size={20}
-                className="cursor-pointer text-gray-600 hover:text-purple-600 transition"
-              />
 
               {user?.role === "student" && (
                 <button
@@ -533,7 +871,7 @@ const Navbar = () => {
                     <button
                       onClick={() => {
                         logout();
-                        navigate("/api/auth/login");
+                        navigate("/");
                       }}
                       className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition cursor-pointer"
                     >
@@ -656,9 +994,12 @@ const Navbar = () => {
             <div className="space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-gray-50">
-                <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                  <h2 className="text-xl font-bold text-purple-600 tracking-tight">
-                    CourseHub Catalog
+                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 select-none">
+                  <span className="w-8 h-8 rounded-lg bg-[#A259FF] flex items-center justify-center text-white text-base font-black shrink-0">
+                    F
+                  </span>
+                  <h2 className="text-lg font-black text-gray-900 tracking-tight">
+                    Fine Course Mart
                   </h2>
                 </Link>
                 <button
@@ -736,6 +1077,14 @@ const Navbar = () => {
                     )}
 
                     <Link
+                      to="/all-courses"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition"
+                    >
+                      All Courses
+                    </Link>
+
+                    <Link
                       to="/learning"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition"
@@ -782,7 +1131,7 @@ const Navbar = () => {
                   onClick={() => {
                     logout();
                     setMobileMenuOpen(false);
-                    navigate("/api/auth/login");
+                    navigate("/");
                   }}
                   className="flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
                 >

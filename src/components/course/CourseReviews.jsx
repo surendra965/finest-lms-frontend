@@ -555,14 +555,14 @@ export const CourseReviews = ({ courseId, theme = "light", isEnrolled = false })
               const createdDate = formatDate(rev.createdAt);
 
               return (
-                <div key={rev.id || rev._id} className="pt-6 first:pt-0 flex gap-4 items-start group">
+                <div key={rev.id || rev._id} className="flex gap-4 items-start group">
                   {/* User Initial Avatar */}
                   <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${styles.avatar}`}>
                     {initials}
                   </div>
 
                   {/* Review details */}
-                  <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex-1 min-w-0 space-y-2 mb-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                       <span className={`text-sm font-bold ${styles.headerText}`}>{authorName}</span>
                       <span className={`text-xs ${styles.subText}`}>{createdDate}</span>
@@ -575,14 +575,6 @@ export const CourseReviews = ({ courseId, theme = "light", isEnrolled = false })
                     <p className={`text-sm leading-relaxed ${styles.bodyText}`}>
                       {rev.review}
                     </p>
-
-                    {/* Helpful indicator/like button */}
-                    <div className="flex items-center gap-4 pt-1">
-                      <button className={`text-xs flex items-center gap-1.5 transition ${styles.subText} hover:text-[#a435f0]`}>
-                        <LuThumbsUp size={12} />
-                        Helpful
-                      </button>
-                    </div>
                   </div>
                 </div>
               );

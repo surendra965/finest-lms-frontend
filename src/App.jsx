@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -31,6 +32,7 @@ import AdminCreateCategory from "./pages/admin/AdminCreateCategory";
 import ChangePassword from "./pages/ChangePassword";
 
 import VerifyCertificate from "./pages/VerifyCertificate";
+import AllCourses from "./pages/AllCourses";
 
 // ✅ Centralized route config
 const HIDE_NAVBAR_ROUTES = [
@@ -41,6 +43,12 @@ const HIDE_NAVBAR_ROUTES = [
 
 function Layout() {
   const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   const shouldHideNavbar =
     HIDE_NAVBAR_ROUTES.includes(location.pathname) ||
@@ -181,6 +189,14 @@ function Layout() {
           element={
             <ProtectedRoute role="student">
               <LearningCourse />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/all-courses"
+          element={
+            <ProtectedRoute>
+              <AllCourses />
             </ProtectedRoute>
           }
         />

@@ -245,13 +245,11 @@ const InstructorHome = () => {
         {!loading && filtered.length > 0 && (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((course) => (
-              <div
+              <CourseCard
                 key={course._id}
-                onClick={() => navigate(`/instructor/course/${course._id}`)}
-                className="cursor-pointer"
-              >
-                <CourseCard course={course} />
-              </div>
+                course={course}
+                href={`/instructor/course/${course._id}`}
+              />
             ))}
 
             {/* "+ New Course" ghost card */}

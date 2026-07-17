@@ -136,10 +136,9 @@ const StatCard = ({ icon, value, label, color, sub }) => (
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
       {icon}
     </div>
-    <div>
+    <div className="flex flex-col items-start">
       <p className="text-2xl font-extrabold text-gray-900">{value}</p>
       <p className="text-xs text-gray-500 font-medium">{label}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
     </div>
   </div>
 );
@@ -302,18 +301,18 @@ const Learning = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* ── STAT CARDS ── */}
         {courses.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <StatCard
               icon={<LuLayoutGrid size={22} className="text-[#a435f0]" />}
               value={dashboardData?.statistics?.enrolledCourses ?? courses.length}
-              label="Total Enrolled"
+              label="Total Courses Enrolled"
               color="bg-[#a435f0]/10"
             />
             <StatCard
               icon={<LuTrendingUp size={22} className="text-orange-500" />}
               value={dashboardData?.statistics?.inProgressCourses ?? pendingCourses.length}
               label="Pending Courses"
-              sub={pendingCourses.length > 0 ? `avg. ${avgPending}% remaining` : undefined}
+              sub={pendingCourses.length > 0 ? `${avgPending}% remaining` : undefined}
               color="bg-orange-50"
             />
             <StatCard
@@ -326,8 +325,13 @@ const Learning = () => {
               icon={<LuClock size={22} className="text-blue-500" />}
               value={dashboardData ? `${dashboardData.statistics?.learningHours || 0} hrs` : `${avgProgress}%`}
               label={dashboardData ? "Learning Hours" : "Avg. Progress"}
-              sub={dashboardData ? "certified study time" : "across all courses"}
               color="bg-blue-50"
+            />
+            <StatCard
+              icon={<LuTrendingUp size={22} className="text-red-500" />}
+              value={`${avgPending}%`}
+              label="Avg. Remaining"
+              color="bg-red-50"
             />
           </div>
         )}

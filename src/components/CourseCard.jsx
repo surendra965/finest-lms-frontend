@@ -23,9 +23,9 @@ import { BsFillPlayFill } from "react-icons/bs";
  *   course.category / categoryId  — category name string / object
  *   variant                       — "grid" (default) | "horizontal" | "compact"
  */
-const CourseCard = ({ course = {}, variant = "grid" }) => {
+const CourseCard = ({ course = {}, variant = "grid", href: customHref }) => {
   const id = course._id || course.id;
-  const href = id ? `/api/public/courses/${id}` : "/courses";
+  const href = customHref || (id ? `/api/public/courses/${id}` : "/courses");
 
   // ── Instructor name ────────────────────────────────────
   const instructor =
@@ -55,8 +55,8 @@ const CourseCard = ({ course = {}, variant = "grid" }) => {
   const durationLabel =
     durationMins > 0
       ? durationMins >= 60
-        ? `${Math.floor(durationMins / 60)}h ${durationMins % 60 > 0 ? `${durationMins % 60}m` : ""}`.trim()
-        : `${durationMins}m`
+        ? `${Math.floor(durationMins / 60)}h ${Math.round(durationMins % 60) > 0 ? `${Math.round(durationMins % 60)}m` : ""}`.trim()
+        : `${Math.round(durationMins)}m`
       : null;
   const students = course.totalStudents ?? course.totalEnrollments ?? 0;
   const level = course.level
@@ -79,7 +79,7 @@ const CourseCard = ({ course = {}, variant = "grid" }) => {
   return (
     <Link
       to={href}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full shadow-sm"
+      className="group bg-white overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full shadow-sm"
     >
       {/* ── Thumbnail ── */}
       <div className="relative aspect-video overflow-hidden bg-gray-50 border-b border-gray-100/50 shrink-0">
@@ -150,26 +150,28 @@ const CourseCard = ({ course = {}, variant = "grid" }) => {
         )}
 
         {/* Meta row (lectures, duration, students) */}
-        <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-400 mb-3">
-          {lectures > 0 && (
-            <span className="flex items-center gap-1">
-              <LuPlay size={11} className="text-purple-400" />
-              {lectures} lectures
-            </span>
-          )}
-          {durationLabel && (
-            <span className="flex items-center gap-1">
-              <LuClock size={11} className="text-purple-400" />
-              {durationLabel}
-            </span>
-          )}
-          {students > 0 && (
-            <span className="flex items-center gap-1">
-              <LuUsers size={11} className="text-purple-400" />
-              {students.toLocaleString()} students
-            </span>
-          )}
-        </div>
+        {(lectures > 0 || durationLabel || students > 0) && (
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-400 mb-3">
+            {lectures > 0 && (
+              <span className="flex items-center gap-1">
+                <LuPlay size={11} className="text-purple-400" />
+                {lectures} lectures
+              </span>
+            )}
+            {durationLabel && (
+              <span className="flex items-center gap-1">
+                <LuClock size={11} className="text-purple-400" />
+                {durationLabel}
+              </span>
+            )}
+            {students > 0 && (
+              <span className="flex items-center gap-1">
+                <LuUsers size={11} className="text-purple-400" />
+                {students.toLocaleString()} students
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Price */}
         <div className="mt-auto flex items-baseline gap-2">

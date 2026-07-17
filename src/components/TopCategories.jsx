@@ -97,36 +97,30 @@ const TopCategories = () => {
   if (!categories.length) return null;
 
   return (
-    <section className="py-16 px-6 max-w-335 mx-auto\">
+    <section className="py-5 px-6 max-w-335 mx-auto">
 
       {/* Header */}
-      <div className="mb-10">
+      <div className="mb-5">
         <h2 className="text-3xl font-bold text-gray-900">
           Top Categories
         </h2>
-        <p className="text-gray-500 mt-2 text-lg ">
-          Explore our most popular categories and start learning today
-        </p>
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
         {categories.map((cat) => {
-          const { Icon, gradient, bg, text } = getStyleForCategory(cat.name);
+          const { Icon, text } = getStyleForCategory(cat.name);
           const slug = cat.slug || cat.name?.toLowerCase().replace(/\s+/g, "-");
 
           return (
             <Link
               key={cat._id}
               to={`/courses/${slug}`}
-              className="group relative rounded-2xl overflow-hidden border border-gray-100 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className="group relative overflow-hidden border border-gray-300 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
-              {/* Gradient accent bar */}
-              <div className={`h-1.5 w-full bg-linear-to-r ${gradient}`} />
-
-              <div className="p-6 flex flex-col items-center text-center gap-4">
+              <div className="p-2 flex items-center text-left gap-4">
                 {/* Icon circle */}
-                <div className={`w-16 h-16 rounded-2xl ${bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                   <Icon size={28} className={text} />
                 </div>
 

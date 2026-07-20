@@ -34,21 +34,22 @@ const Register = () => {
     const email = form.email.trim().toLowerCase();
     const password = form.password;
 
-    const nameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+    const nameRegex = /^[A-Za-z]+$/;
 
     // FIRST NAME
     if (!firstName) {
       nextErrors.firstName = "First name is required";
     } else if (!nameRegex.test(firstName)) {
-      nextErrors.firstName = "Only letters allowed";
-    } else if (firstName.length < 2) {
-      nextErrors.firstName = "Minimum 2 characters required";
+      nextErrors.firstName = "Only letters and spaces allowed";
+    } else if (firstName.length < 1) {
+      nextErrors.firstName = "Minimum 1 character required";
     } else if (firstName.length > 50) {
       nextErrors.firstName = "Maximum 50 characters allowed";
     }
-    
+
+    // LAST NAME
     if (!nameRegex.test(lastName)) {
-      nextErrors.lastName = "Only letters allowed";
+      nextErrors.lastName = "Last name is invalid";
     }
 
     // EMAIL

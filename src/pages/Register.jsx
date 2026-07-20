@@ -40,22 +40,15 @@ const Register = () => {
     if (!firstName) {
       nextErrors.firstName = "First name is required";
     } else if (!nameRegex.test(firstName)) {
-      nextErrors.firstName = "Only letters and spaces allowed";
+      nextErrors.firstName = "Only letters allowed";
     } else if (firstName.length < 2) {
       nextErrors.firstName = "Minimum 2 characters required";
     } else if (firstName.length > 50) {
       nextErrors.firstName = "Maximum 50 characters allowed";
     }
-
-    // LAST NAME
-    if (!lastName) {
-      nextErrors.lastName = "Last name is required";
-    } else if (!nameRegex.test(lastName)) {
-      nextErrors.lastName = "Only letters and spaces allowed";
-    } else if (lastName.length < 2) {
-      nextErrors.lastName = "Minimum 2 characters required";
-    } else if (lastName.length > 50) {
-      nextErrors.lastName = "Maximum 50 characters allowed";
+    
+    if (!nameRegex.test(lastName)) {
+      nextErrors.lastName = "Only letters allowed";
     }
 
     // EMAIL

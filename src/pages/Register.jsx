@@ -47,11 +47,6 @@ const Register = () => {
       nextErrors.firstName = "Maximum 50 characters allowed";
     }
 
-    // LAST NAME
-    if (!nameRegex.test(lastName)) {
-      nextErrors.lastName = "Last name is invalid";
-    }
-
     // EMAIL
     if (!email) {
       nextErrors.email = "Email is required";

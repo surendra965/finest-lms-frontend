@@ -25,6 +25,7 @@ import { CourseReviews } from "../components/course/CourseReviews";
 import { AuthContext } from "../context/authContext";
 import { useCart } from "../context/CartContext";
 import { useEnrollment } from "../context/EnrollmentContext";
+import { enrollCourse } from "../services/enrollmentService";
 
 const CoursePreview = () => {
   const { id } = useParams();
@@ -33,12 +34,13 @@ const CoursePreview = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const { cart, addCourseToCart, loading: cartLoading } = useCart();
-  const { isEnrolled, enrolledCourseIds } = useEnrollment();
+  const { isEnrolled, enrolledCourseIds, refreshEnrollments } = useEnrollment();
 
   const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [activePreviewLecture, setActivePreviewLecture] = useState(null);
+  const [enrolling, setEnrolling] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -181,6 +183,30 @@ const CoursePreview = () => {
       }
     }
     navigate("/checkout");
+  };
+
+  const handleEnrollNow = async () => {
+    if (!user) {
+      toast.info("Please log in to enroll in this course.");
+      navigate("/api/auth/login");
+      return;
+    }
+    if (alreadyEnrolled) {
+      navigate(`/learning/${course._id}`);
+      return;
+    }
+    setEnrolling(true);
+    try {
+      await enrollCourse(course._id);
+      toast.success("Successfully enrolled in the course!");
+      await refreshEnrollments();
+      navigate(`/learning/${course._id}`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to enroll in the course.");
+    } finally {
+      setEnrolling(false);
+    }
   };
 
   const formatTotalDuration = (mins) => {
@@ -333,10 +359,35 @@ const CoursePreview = () => {
                 {alreadyEnrolled ? (
                   <button
                     onClick={() => navigate(`/learning/${course._id}`)}
-                    className="w-full bg-purple-500 hover:bg-purple-600 border border-[#d1d7dc] text-white font-bold py-3 text-sm text-center transition"
+                    className="w-full bg-purple-550 hover:bg-purple-655 border border-[#d1d7dc] text-white font-bold py-3 text-sm text-center transition"
                   >
                     Go to My Course
                   </button>
+                ) : rawPrice === 0 ? (
+                  <>
+                    {(isStudent || user?.role === "admin") && (
+                      <button
+                        onClick={handleEnrollNow}
+                        disabled={enrolling}
+                        className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 text-sm text-center transition disabled:opacity-60"
+                      >
+                        {enrolling ? "Enrolling..." : "Enroll Now"}
+                      </button>
+                    )}
+                    {!user && (
+                      <button
+                        onClick={() => navigate("/api/auth/login")}
+                        className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 text-sm text-center transition"
+                      >
+                        Login to Enroll
+                      </button>
+                    )}
+                    {isInstructor && (
+                      <div className="rounded border border-[#ecc94b] bg-yellow-50/50 p-3 text-center text-xs text-amber-800 font-sans leading-relaxed">
+                        You are registered as Instructor. Student login required to enroll.
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
                     {isStudent && (
@@ -708,8 +759,33 @@ const CoursePreview = () => {
                         Go to My Course
                       </button>
                       <p className="text-[11px] text-slate-400 text-center font-sans tracking-tight mt-1.5">
-                        You purchased this course.
+                        You own this course.
                       </p>
+                    </>
+                  ) : rawPrice === 0 ? (
+                    <>
+                      {(isStudent || user?.role === "admin") && (
+                        <button
+                          onClick={handleEnrollNow}
+                          disabled={enrolling}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 text-sm transition h-[48px] cursor-pointer disabled:opacity-60"
+                        >
+                          {enrolling ? "Enrolling..." : "Enroll Now"}
+                        </button>
+                      )}
+                      {!user && (
+                        <button
+                          onClick={() => navigate("/api/auth/login")}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 text-sm text-center transition h-[48px] cursor-pointer"
+                        >
+                          Login to Enroll
+                        </button>
+                      )}
+                      {isInstructor && (
+                        <div className="rounded border border-[#ecc94b] bg-yellow-50/50 p-3 text-center text-xs text-amber-800 font-sans leading-relaxed">
+                          You are registered as Instructor. Student login required to enroll.
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>

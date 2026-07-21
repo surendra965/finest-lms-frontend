@@ -29,6 +29,13 @@ const navItems = [
     path: "/admin/courses/pending",
   },
   {
+    id: "my-courses",
+    label: "My Courses",
+    description: "Manage your created courses",
+    icon: LuBookMarked,
+    path: "/instructor/home",
+  },
+  {
     id: "create-course",
     label: "Create Course",
     description: "Publish a new course",
@@ -50,6 +57,7 @@ const PAGE_LABELS = {
   "/admin/courses": "Course Review",
   "/admin/categories": "Category Management",
   "/instructor/create-course": "Create Course",
+  "/instructor/home": "My Courses",
   "/admin": "Dashboard",
 };
 
@@ -95,7 +103,10 @@ const AdminLayout = ({ children }) => {
 
         {/* Admin User Card */}
         <div className="px-4 py-4 border-b border-white/10">
-          <div className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5">
+          <Link
+            to="/api/users/profile"
+            className="flex items-center gap-3 bg-white/5 hover:bg-white/10 rounded-xl px-3 py-2.5 transition group"
+          >
             <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-white/20 overflow-hidden bg-purple-600 text-white font-bold text-xs">
               {user?.avatar ? (
                 <img
@@ -108,14 +119,14 @@ const AdminLayout = ({ children }) => {
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="text-sm font-semibold text-white truncate group-hover:text-purple-300 transition">
                 {user?.firstName} {user?.lastName}
               </p>
               <p className="text-[11px] text-purple-400 font-bold uppercase tracking-wide">
                 Administrator
               </p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Nav Links */}
@@ -159,7 +170,7 @@ const AdminLayout = ({ children }) => {
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-white/8 hover:text-white transition text-sm font-medium"
           >
             <LuBookMarked size={16} />
-            View Student Site
+            Home
           </Link>
           <button
             onClick={handleLogout}
@@ -180,6 +191,18 @@ const AdminLayout = ({ children }) => {
             <p className="text-xs text-gray-500 mt-0.5">{pageLabel}</p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-[#a435f0] border border-gray-300 hover:border-[#a435f0] px-3.5 py-1.5 rounded-xl transition duration-150"
+            >
+              Go to Home
+            </Link>
+            <Link
+              to="/api/users/profile"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#a435f0] hover:bg-[#8710d8] px-3.5 py-1.5 rounded-xl transition duration-150"
+            >
+              My Profile
+            </Link>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-100 px-3 py-1.5 rounded-full">
               <LuShieldCheck size={13} />
               Admin Access

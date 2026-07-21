@@ -107,7 +107,9 @@ const InstructorHome = () => {
                 )}
               </div>
               <div>
-                <p className="text-[#cec0fc] text-xs font-medium uppercase tracking-widest mb-0.5">Instructor Dashboard</p>
+                <p className="text-[#cec0fc] text-xs font-medium uppercase tracking-widest mb-0.5">
+                  {user?.role === "admin" ? "Admin Course Dashboard" : "Instructor Dashboard"}
+                </p>
                 <h1 className="text-white text-xl font-extrabold leading-tight">
                   {user?.firstName} {user?.lastName}
                 </h1>

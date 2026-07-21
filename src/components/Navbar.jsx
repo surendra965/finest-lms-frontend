@@ -193,6 +193,7 @@ const Navbar = () => {
 
   const [open, setOpen] = useState(false);
   const [showFindCourses, setShowFindCourses] = useState(false);
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -543,8 +544,8 @@ const Navbar = () => {
   return (
     <>
       <div className={`sticky top-0 z-40 transition-all duration-300 flex items-center justify-between px-4 md:px-6 py-3.5 ${isScrolled
-          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100/50"
-          : "bg-white border-b border-gray-100"
+        ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100/50"
+        : "bg-white border-b border-gray-100"
         }`}>
         {/* LEFT SECTION (Logo & Find Courses) */}
         <div className="flex items-center gap-4 lg:gap-6">
@@ -775,12 +776,63 @@ const Navbar = () => {
             <div className="hidden lg:flex items-center gap-5 xl:gap-6">
               {/* ROLE BASED BUTTON */}
               {user?.role === "admin" ? (
-                <button
-                  onClick={() => navigate("/admin")}
-                  className="text-sm xl:text-base font-semibold text-white bg-[#a435f0] hover:bg-[#8710d8] px-3 py-1.5 rounded-lg cursor-pointer"
+                <div
+                  className="relative py-2"
+                  onMouseEnter={() => setShowAdminMenu(true)}
+                  onMouseLeave={() => setShowAdminMenu(false)}
                 >
-                  Admin Panel
-                </button>
+                  <button
+                    onClick={() => navigate("/admin")}
+                    className="flex items-center gap-1.5 text-sm xl:text-base font-semibold text-white bg-[#a435f0] hover:bg-[#8710d8] px-3 py-1.5 rounded-lg cursor-pointer"
+                  >
+                    Admin Panel
+                    <HiOutlineChevronDown
+                      size={14}
+                      className={`transition-transform duration-200 ${showAdminMenu ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {showAdminMenu && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl py-2 z-55 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                        onClick={() => setShowAdminMenu(false)}
+                      >
+                        <span className="font-semibold text-slate-800">Admin Dashboard</span>
+                      </Link>
+                      <Link
+                        to="/admin/courses/pending"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                        onClick={() => setShowAdminMenu(false)}
+                      >
+                        <span className="font-semibold text-slate-800">Course Reviews</span>
+                      </Link>
+                      <Link
+                        to="/admin/categories"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                        onClick={() => setShowAdminMenu(false)}
+                      >
+                        <span className="font-semibold text-slate-800">Manage Categories</span>
+                      </Link>
+                      <div className="border-t border-gray-100 my-1"></div>
+                      <Link
+                        to="/instructor/home"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                        onClick={() => setShowAdminMenu(false)}
+                      >
+                        <span className="font-semibold text-slate-800">My Courses</span>
+                      </Link>
+                      <Link
+                        to="/instructor/create-course"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                        onClick={() => setShowAdminMenu(false)}
+                      >
+                        <span className="font-semibold text-slate-800">Create Course</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               ) : user?.role === "instructor" ? (
                 <button
                   onClick={() => navigate("/instructor/home")}
@@ -940,14 +992,14 @@ const Navbar = () => {
                 aria-label="Open User Menu"
               >
                 {user?.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.firstName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    initials
-                  )}
+                  <img
+                    src={user.avatar}
+                    alt={user.firstName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
               </button>
             ) : (
               <Link
@@ -1063,13 +1115,57 @@ const Navbar = () => {
                 {user && (
                   <>
                     {user.role === "admin" ? (
-                      <Link
-                        to="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-white bg-[#a435f0] hover:bg-[#8710d8] transition"
-                      >
-                        Admin Panel
-                      </Link>
+                      <div className="space-y-1">
+                        <Link
+                          to="/admin"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-white bg-[#a435f0] hover:bg-[#8710d8] transition mb-2"
+                        >
+                          Admin Panel
+                        </Link>
+                        <div className="pl-3 space-y-1.5">
+                          <Link
+                            to="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                            Admin Dashboard
+                          </Link>
+                          <Link
+                            to="/admin/courses/pending"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                            Course Reviews
+                          </Link>
+                          <Link
+                            to="/admin/categories"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                            Manage Categories
+                          </Link>
+                          <Link
+                            to="/instructor/home"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                            My Courses
+                          </Link>
+                          <Link
+                            to="/instructor/create-course"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                            Create Course
+                          </Link>
+                        </div>
+                      </div>
                     ) : user.role === "instructor" ? (
                       <Link
                         to="/instructor/home"

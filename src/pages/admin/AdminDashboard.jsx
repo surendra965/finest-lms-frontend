@@ -224,8 +224,8 @@ const AdminDashboard = () => {
                   key={tab.id}
                   onClick={() => setActivePanelTab(tab.id)}
                   className={`px-6 py-2.5 font-bold text-sm border-b-2 transition-all cursor-pointer rounded-lg mr-2 ${activePanelTab === tab.id
-                      ? "border-[#a435f0] text-white bg-[#a435f0]"
-                      : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    ? "border-[#a435f0] text-white bg-[#a435f0]"
+                    : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                 >
                   {tab.label}

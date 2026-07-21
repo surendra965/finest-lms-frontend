@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/authContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import loginill from "../assets/Computer login-amico.png";
 import { toast } from "react-toastify";
 import { LuEye, LuEyeOff } from "react-icons/lu";
@@ -8,6 +8,7 @@ import { LuEye, LuEyeOff } from "react-icons/lu";
 const Login = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({
     email: "",
@@ -78,11 +79,11 @@ const Login = () => {
 
     if (result.success) {
       toast.success("Logged in successfully!");
-      // Redirect admin directly to admin panel
       if (result.role === "admin") {
-        navigate("/admin");
-      } else {
         navigate("/");
+      } else {
+        const from = location.state?.from?.pathname || "/";
+        navigate(from);
       }
       return;
     }
@@ -119,9 +120,8 @@ const Login = () => {
             value={form.email}
             placeholder="Enter your email"
             onChange={handleChange}
-            className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 focus:outline-none ${
-              errors.email ? "border border-red-500" : ""
-            }`}
+            className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 focus:outline-none ${errors.email ? "border border-red-500" : ""
+              }`}
           />
           {errors.email && (
             <p className="mt-1 mb-3 text-sm text-red-600">{errors.email}</p>
@@ -136,9 +136,8 @@ const Login = () => {
               value={form.password}
               placeholder="Enter your password"
               onChange={handleChange}
-              className={`w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 focus:outline-none ${
-                errors.password ? "border border-red-500" : ""
-              }`}
+              className={`w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 focus:outline-none ${errors.password ? "border border-red-500" : ""
+                }`}
             />
             <button
               type="button"

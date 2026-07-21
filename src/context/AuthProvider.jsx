@@ -205,7 +205,8 @@ export const AuthProvider = ({ children }) => {
           await fetchCurrentUser();
         }
 
-        return { success: true };
+        const currentUser = loggedUser || (await fetchCurrentUser());
+        return { success: true, role: currentUser?.role };
       }
 
       return {

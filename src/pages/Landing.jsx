@@ -31,7 +31,7 @@ import CourseCard from "../components/CourseCard";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const AnimatedCounter = ({ end, duration = 1500, suffix = "" }) => {
+const AnimatedCounter = ({ end, duration = 3000, suffix = "" }) => {
     const [count, setCount] = useState(0);
     const elementRef = useRef(null);
     const [hasStarted, setHasStarted] = useState(false);
@@ -239,7 +239,7 @@ const Landing = () => {
                             <div className="grid grid-cols-4 gap-4 pt-6 border-t border-gray-100 max-w-md">
                                 <div>
                                     <p className="text-xl md:text-2xl font-black text-gray-900">
-                                        <AnimatedCounter end={10000} suffix="+" />
+                                        <AnimatedCounter end={1000} suffix="+" />
                                     </p>
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Students</p>
                                 </div>

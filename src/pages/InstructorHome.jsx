@@ -95,10 +95,16 @@ const InstructorHome = () => {
           {/* Top row: avatar + name + CTA */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#a435f0] flex items-center justify-center text-white text-xl font-extrabold flex-shrink-0 ring-2 ring-[#a435f0]/40">
-                {user?.avatar
-                  ? <img src={user.avatar} className="w-full h-full object-cover rounded-full" alt="avatar" />
-                  : initials}
+              <div className="w-14 h-14 rounded-full bg-[#a435f0] flex items-center justify-center text-white text-xl font-extrabold flex-shrink-0 ring-2 ring-[#a435f0]/40 overflow-hidden">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.firstName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
               </div>
               <div>
                 <p className="text-[#cec0fc] text-xs font-medium uppercase tracking-widest mb-0.5">Instructor Dashboard</p>

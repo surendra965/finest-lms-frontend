@@ -17,9 +17,11 @@ import {
   LuStar,
   LuVideo,
   LuTriangleAlert,
+  LuPlay,
 } from "react-icons/lu";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { getAdminCourse, approveCourse, rejectCourse } from "../../services/adminService";
+import HlsPlayer from "../../components/course/HlsPlayer";
 
 /* ── helpers ── */
 const formatDuration = (mins) => {
@@ -66,6 +68,8 @@ const AdminCourseReview = () => {
   const [acting, setActing] = useState(null); // 'approve' | 'reject' | null
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [reviewingLectureId, setReviewingLectureId] = useState(null);
+  const [reviewedLectures, setReviewedLectures] = useState({});
 
   useEffect(() => {
     const load = async () => {
@@ -141,6 +145,13 @@ const AdminCourseReview = () => {
   }
 
   const { course, sections = [], lectures = [], studentCount = 0 } = data;
+
+  const hasLectureVideo = (lec) => {
+    return !!(lec?.video?.masterPlaylist || lec?.video?.s3Prefix || lec?.videoUrl || lec?.video);
+  };
+
+  const lecturesWithVideos = lectures.filter(hasLectureVideo);
+  const allVideosReviewed = lecturesWithVideos.every((lec) => reviewedLectures[lec._id]);
 
   return (
     <AdminLayout>
@@ -285,20 +296,106 @@ const AdminCourseReview = () => {
               <h3 className="font-bold text-gray-900">Curriculum ({sections.length} sections)</h3>
             </div>
             <div className="divide-y divide-gray-100">
-              {sections.map((sec, i) => (
-                <div key={sec._id || i} className="px-6 py-4">
-                  <p className="text-sm font-bold text-gray-800">
-                    Section {i + 1}: {sec.title}
-                  </p>
-                  {sec.description && (
-                    <p className="text-xs text-gray-400 mt-1">{sec.description}</p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1.5">
-                    {sec.totalLectures || 0} lecture{(sec.totalLectures || 0) !== 1 ? "s" : ""}{" "}
-                    {sec.totalDuration ? `• ${formatDuration(sec.totalDuration)}` : ""}
-                  </p>
-                </div>
-              ))}
+              {sections.map((sec, i) => {
+                const sectionLectures = lectures.filter((lec) => lec.sectionId === sec._id);
+                return (
+                  <div key={sec._id || i} className="px-6 py-5 space-y-3 bg-gray-50/30">
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">
+                        Section {i + 1}: {sec.title}
+                      </p>
+                      {sec.description && (
+                        <p className="text-xs text-gray-400 mt-1">{sec.description}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        {sectionLectures.length || 0} lecture{(sectionLectures.length) !== 1 ? "s" : ""}{" "}
+                        {sec.totalDuration ? `• ${formatDuration(sec.totalDuration)}` : ""}
+                      </p>
+                    </div>
+
+                    {/* Lectures under this section */}
+                    {sectionLectures.length > 0 && (
+                      <div className="pl-4 space-y-2 mt-2">
+                        {sectionLectures.map((lec, idx) => {
+                          const isReviewing = reviewingLectureId === lec._id;
+                          const isReviewed = !!reviewedLectures[lec._id];
+                          const hasVideo = hasLectureVideo(lec);
+                          const masterPlaylist = lec.video?.masterPlaylist || lec.videoUrl;
+
+                          return (
+                            <div key={lec._id || idx} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3">
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                  <LuVideo size={16} className="text-purple-500" />
+                                  <div>
+                                    <h4 className="text-xs font-semibold text-gray-850">
+                                      {idx + 1}. {lec.title}
+                                    </h4>
+                                    {lec.description && (
+                                      <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{lec.description}</p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                  {hasVideo ? (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setReviewingLectureId(isReviewing ? null : lec._id);
+                                          // Automatically mark as reviewed if they open it
+                                          setReviewedLectures((prev) => ({ ...prev, [lec._id]: true }));
+                                        }}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border-none ${
+                                          isReviewing
+                                            ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                            : "bg-purple-600 text-white hover:bg-purple-700"
+                                        }`}
+                                      >
+                                        <LuPlay size={12} />
+                                        {isReviewing ? "Hide Video" : "Review Video"}
+                                      </button>
+
+                                      <button
+                                        onClick={() => {
+                                          setReviewedLectures((prev) => ({
+                                            ...prev,
+                                            [lec._id]: !prev[lec._id]
+                                          }));
+                                        }}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border ${
+                                          isReviewed
+                                            ? "bg-green-100 text-green-700 border-green-200"
+                                            : "bg-gray-150 text-gray-600 hover:bg-gray-200 border-gray-300"
+                                        }`}
+                                      >
+                                        {isReviewed ? "✓ Reviewed" : "Mark Reviewed"}
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span className="text-[10px] text-gray-400 italic">No video lecture</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* HLS Video Player */}
+                              {isReviewing && hasVideo && (
+                                <div className="rounded-lg overflow-hidden border border-gray-300 shadow-md bg-gray-900">
+                                  <HlsPlayer
+                                    lectureId={lec._id}
+                                    fallbackSrc={masterPlaylist}
+                                    className="w-full max-h-80"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -310,6 +407,12 @@ const AdminCourseReview = () => {
             <p className="text-sm text-gray-500 mt-1">
               Approving will publish this course. Rejecting will notify the instructor.
             </p>
+            {!allVideosReviewed && (
+              <p className="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-lg">
+                <LuTriangleAlert size={14} className="shrink-0" />
+                <span>Please review all lecture videos before approving. ({Object.values(reviewedLectures).filter(Boolean).length} / {lecturesWithVideos.length} reviewed)</span>
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
@@ -322,8 +425,11 @@ const AdminCourseReview = () => {
             </button>
             <button
               onClick={handleApprove}
-              disabled={!!acting}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer disabled:opacity-50"
+              disabled={!!acting || !allVideosReviewed}
+              className={`flex items-center gap-2 font-bold px-6 py-3 rounded-xl transition cursor-pointer text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+                allVideosReviewed ? "bg-green-600 hover:bg-green-700" : "bg-gray-400"
+              }`}
+              title={!allVideosReviewed ? "All videos must be reviewed first" : ""}
             >
               {acting === "approve" ? (
                 <LuLoader size={18} className="animate-spin" />

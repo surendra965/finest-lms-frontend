@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { authFetch } from "../utils/auth";
-import { LuLock, LuArrowLeft, LuCheck } from "react-icons/lu";
+import { LuLock, LuArrowLeft, LuCheck, LuEye, LuEyeOff } from "react-icons/lu";
 
 const ChangePassword = () => {
     const navigate = useNavigate();
@@ -15,6 +15,9 @@ const ChangePassword = () => {
     });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setForm((prev) => ({
@@ -110,15 +113,25 @@ const ChangePassword = () => {
                         <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-1.5">
                             Current Password
                         </label>
-                        <input
-                            type="password"
-                            name="currentPassword"
-                            value={form.currentPassword}
-                            onChange={handleChange}
-                            placeholder="••••••••"
-                            className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.currentPassword ? "border-red-500" : "border-gray-200"
-                                }`}
-                        />
+                        <div className="relative">
+                            <input
+                                type={showCurrentPassword ? "text" : "password"}
+                                name="currentPassword"
+                                value={form.currentPassword}
+                                onChange={handleChange}
+                                placeholder="••••••••"
+                                className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.currentPassword ? "border-red-500" : "border-gray-200"
+                                    }`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowCurrentPassword((v) => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer bg-transparent border-none"
+                                tabIndex={-1}
+                            >
+                                {showCurrentPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                            </button>
+                        </div>
                         {errors.currentPassword && (
                             <p className="text-xs text-red-500 mt-1 font-semibold">{errors.currentPassword}</p>
                         )}
@@ -129,15 +142,25 @@ const ChangePassword = () => {
                         <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-1.5">
                             New Password
                         </label>
-                        <input
-                            type="password"
-                            name="newPassword"
-                            value={form.newPassword}
-                            onChange={handleChange}
-                            placeholder="Min. 8 characters"
-                            className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.newPassword ? "border-red-500" : "border-gray-200"
-                                }`}
-                        />
+                        <div className="relative">
+                            <input
+                                type={showNewPassword ? "text" : "password"}
+                                name="newPassword"
+                                value={form.newPassword}
+                                onChange={handleChange}
+                                placeholder="Min. 8 characters"
+                                className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.newPassword ? "border-red-500" : "border-gray-200"
+                                    }`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNewPassword((v) => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer bg-transparent border-none"
+                                tabIndex={-1}
+                            >
+                                {showNewPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                            </button>
+                        </div>
                         {errors.newPassword && (
                             <p className="text-xs text-red-500 mt-1 font-semibold">{errors.newPassword}</p>
                         )}
@@ -148,15 +171,25 @@ const ChangePassword = () => {
                         <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-1.5">
                             Confirm New Password
                         </label>
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            value={form.confirmPassword}
-                            onChange={handleChange}
-                            placeholder="Re-enter new password"
-                            className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.confirmPassword ? "border-red-500" : "border-gray-200"
-                                }`}
-                        />
+                        <div className="relative">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                name="confirmPassword"
+                                value={form.confirmPassword}
+                                onChange={handleChange}
+                                placeholder="Re-enter new password"
+                                className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${errors.confirmPassword ? "border-red-500" : "border-gray-200"
+                                    }`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword((v) => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer bg-transparent border-none"
+                                tabIndex={-1}
+                            >
+                                {showConfirmPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                            </button>
+                        </div>
                         {errors.confirmPassword && (
                             <p className="text-xs text-red-500 mt-1 font-semibold">{errors.confirmPassword}</p>
                         )}

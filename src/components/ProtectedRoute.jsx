@@ -34,7 +34,11 @@ const ProtectedRoute = ({ children, role }) => {
      ROLE BASED ACCESS
   ========================= */
   if (role && user.role !== role) {
-    return <Navigate to="/" replace />;
+    if (user.role === "admin" && role === "instructor") {
+      // Admins are allowed to access instructor routes (e.g. creating courses)
+    } else {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return children;

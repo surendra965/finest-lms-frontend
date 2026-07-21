@@ -804,12 +804,14 @@ const Navbar = () => {
                 All Courses
               </button>
 
-              <button
-                onClick={() => navigate("/learning")}
-                className="text-sm xl:text-base font-semibold text-gray-700 hover:text-purple-600 cursor-pointer"
-              >
-                My Learning
-              </button>
+              {user?.role !== "admin" && (
+                <button
+                  onClick={() => navigate("/learning")}
+                  className="text-sm xl:text-base font-semibold text-gray-700 hover:text-purple-600 cursor-pointer"
+                >
+                  My Learning
+                </button>
+              )}
 
               {user?.role === "student" && (
                 <button
@@ -934,14 +936,18 @@ const Navbar = () => {
             {user ? (
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="w-8 h-8 rounded-full border border-purple-200 overflow-hidden cursor-pointer"
+                className="w-8 h-8 rounded-full border border-purple-200 overflow-hidden cursor-pointer flex items-center justify-center bg-purple-600 text-white font-bold text-xs"
                 aria-label="Open User Menu"
               >
-                <img
-                  src={user.avatar}
-                  alt={user.firstName}
-                  className="w-full h-full object-cover"
-                />
+                {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.firstName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
               </button>
             ) : (
               <Link
@@ -1013,11 +1019,17 @@ const Navbar = () => {
               {/* User Identity Info */}
               {user ? (
                 <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-2xl">
-                  <img
-                    src={user.avatar}
-                    alt={user.firstName}
-                    className="w-11 h-11 rounded-full object-cover border-2 border-purple-200"
-                  />
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 border-2 border-purple-200 overflow-hidden bg-purple-600 text-white font-bold text-sm">
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.firstName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">
                       {user.firstName} {user.lastName}
@@ -1084,13 +1096,15 @@ const Navbar = () => {
                       All Courses
                     </Link>
 
-                    <Link
-                      to="/learning"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition"
-                    >
-                      My Learning
-                    </Link>
+                    {user?.role !== "admin" && (
+                      <Link
+                        to="/learning"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition"
+                      >
+                        My Learning
+                      </Link>
+                    )}
                   </>
                 )}
 

@@ -315,7 +315,7 @@ const AdminDashboard = () => {
                       </button>
 
                       <button
-                        onClick={() => navigate("/categories")}
+                        onClick={() => navigate("/admin/categories")}
                         className="w-full flex items-start gap-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-sm hover:border-purple-300 transition cursor-pointer text-left group"
                       >
                         <div className="w-10 h-10 bg-purple-50 text-[#a435f0] rounded-xl flex items-center justify-center shrink-0">
@@ -381,9 +381,13 @@ const AdminDashboard = () => {
                           <tr key={student._id} className="hover:bg-slate-50/50 transition">
                             <td className="py-4 px-6 font-semibold text-slate-900">
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs uppercase">
+                                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs uppercase overflow-hidden">
                                   {student.avatar ? (
-                                    <img src={student.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                                    <img
+                                      src={student.avatar}
+                                      alt={`${student.firstName} ${student.lastName}`}
+                                      className="w-full h-full object-cover"
+                                    />
                                   ) : (
                                     `${student.firstName?.charAt(0) || ""}${student.lastName?.charAt(0) || ""}`
                                   )}
@@ -458,9 +462,13 @@ const AdminDashboard = () => {
                           <tr key={inst._id} className="hover:bg-slate-50/50 transition">
                             <td className="py-4 px-6 font-semibold text-slate-900">
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase overflow-hidden">
                                   {inst.avatar ? (
-                                    <img src={inst.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                                    <img
+                                      src={inst.avatar}
+                                      alt={`${inst.firstName} ${inst.lastName}`}
+                                      className="w-full h-full object-cover"
+                                    />
                                   ) : (
                                     `${inst.firstName?.charAt(0) || ""}${inst.lastName?.charAt(0) || ""}`
                                   )}

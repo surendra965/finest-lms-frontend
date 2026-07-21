@@ -227,7 +227,7 @@ function Layout() {
           }
         />
         <Route
-          path="/categories"
+          path="/admin/categories"
           element={
             <ProtectedRoute role="admin">
               <AdminCreateCategory />

@@ -3,6 +3,7 @@ import { createCategory, getCategoriesAdmin, updateCategory, deleteCategory } fr
 import { LuTrash2, LuPencil, LuSave, LuX, LuPlus, LuFolder, LuLayers } from "react-icons/lu";
 import { toast } from "react-toastify";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import AdminLayout from "../../components/admin/AdminLayout";
 
 const AdminCreateCategory = () => {
     const [categories, setCategories] = useState([]);
@@ -133,7 +134,8 @@ const AdminCreateCategory = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-4 md:p-8 font-sans">
+        <AdminLayout>
+            <div className="max-w-6xl mx-auto p-4 md:p-8 font-sans">
             {/* Header */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                 <div>
@@ -303,7 +305,8 @@ const AdminCreateCategory = () => {
                     variant={confirmDialog.variant}
                 />
             )}
-        </div>
+            </div>
+        </AdminLayout>
     );
 };
 

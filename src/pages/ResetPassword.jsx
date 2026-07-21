@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import resetill from "../assets/Reset password-amico.png";
 import { toast } from "react-toastify";
 import { getApiErrorMessage, readJson } from "../utils/auth";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -15,6 +16,8 @@ const ResetPassword = () => {
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -149,16 +152,26 @@ const ResetPassword = () => {
             <label className="text-sm font-medium">
               New Password
             </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Enter new password"
-              className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 ${
-                error ? "border border-red-500" : ""
-              }`}
-            />
+            <div className="relative mt-1">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter new password"
+                className={`w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 ${
+                  error ? "border border-red-500" : ""
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                tabIndex={-1}
+              >
+                {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+              </button>
+            </div>
           </div>
 
           {/* CONFIRM PASSWORD */}
@@ -166,16 +179,26 @@ const ResetPassword = () => {
             <label className="text-sm font-medium">
               Confirm Password
             </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm password"
-              className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 ${
-                error ? "border border-red-500" : ""
-              }`}
-            />
+            <div className="relative mt-1">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm password"
+                className={`w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 ${
+                  error ? "border border-red-500" : ""
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+              </button>
+            </div>
           </div>
 
           {/* ERROR */}

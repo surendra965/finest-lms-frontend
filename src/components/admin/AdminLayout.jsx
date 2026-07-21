@@ -4,13 +4,23 @@ import { AuthContext } from "../../context/authContext";
 import {
   LuLayoutDashboard,
   LuBookOpen,
-  LuUsers,
   LuLogOut,
   LuShieldCheck,
   LuChevronRight,
+  LuCirclePlus,
+  LuLayers,
+  LuBookMarked,
 } from "react-icons/lu";
 
 const navItems = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    description: "Overview & analytics",
+    icon: LuLayoutDashboard,
+    path: "/admin",
+    exact: true,
+  },
   {
     id: "pending",
     label: "Course Reviews",
@@ -19,20 +29,36 @@ const navItems = [
     path: "/admin/courses/pending",
   },
   {
-    id: "dashboard",
-    label: "Dashboard",
-    description: "Overview & stats",
-    icon: LuLayoutDashboard,
-    path: "/admin",
+    id: "create-course",
+    label: "Create Course",
+    description: "Publish a new course",
+    icon: LuCirclePlus,
+    path: "/instructor/create-course",
   },
   {
-    id: "category",
-    label: "Category",
-    description: "Create categories",
-    icon: LuLayoutDashboard,
-    path: "/categories",
+    id: "categories",
+    label: "Categories",
+    description: "Manage course categories",
+    icon: LuLayers,
+    path: "/admin/categories",
   },
 ];
+
+// Map path prefixes → breadcrumb label
+const PAGE_LABELS = {
+  "/admin/courses/pending": "Course Review Queue",
+  "/admin/courses": "Course Review",
+  "/admin/categories": "Category Management",
+  "/instructor/create-course": "Create Course",
+  "/admin": "Dashboard",
+};
+
+const getPageLabel = (pathname) => {
+  for (const [prefix, label] of Object.entries(PAGE_LABELS)) {
+    if (pathname.startsWith(prefix)) return label;
+  }
+  return "Admin Panel";
+};
 
 const AdminLayout = ({ children }) => {
   const { user, logout } = useContext(AuthContext);
@@ -43,6 +69,12 @@ const AdminLayout = ({ children }) => {
     logout();
     navigate("/api/auth/login");
   };
+
+  const initials = user
+    ? `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}`.toUpperCase()
+    : "";
+
+  const pageLabel = getPageLabel(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans">
@@ -64,11 +96,17 @@ const AdminLayout = ({ children }) => {
         {/* Admin User Card */}
         <div className="px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5">
-            <img
-              src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.firstName}`}
-              alt={user?.firstName}
-              className="w-9 h-9 rounded-full object-cover border border-white/20"
-            />
+            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-white/20 overflow-hidden bg-purple-600 text-white font-bold text-xs">
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.firstName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                initials
+              )}
+            </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate">
                 {user?.firstName} {user?.lastName}
@@ -87,10 +125,9 @@ const AdminLayout = ({ children }) => {
           </p>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              item.path === "/admin"
-                ? location.pathname === "/admin"
-                : location.pathname.startsWith(item.path);
+            const isActive = item.exact
+              ? location.pathname === item.path
+              : location.pathname.startsWith(item.path);
 
             return (
               <Link
@@ -121,7 +158,7 @@ const AdminLayout = ({ children }) => {
             to="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-white/8 hover:text-white transition text-sm font-medium"
           >
-            <LuUsers size={16} />
+            <LuBookMarked size={16} />
             View Student Site
           </Link>
           <button
@@ -140,9 +177,7 @@ const AdminLayout = ({ children }) => {
         <header className="sticky top-0 z-20 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
             <h1 className="text-base font-bold text-gray-900">Admin Panel</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {location.pathname.includes("pending") ? "Course Review Queue" : "Dashboard"}
-            </p>
+            <p className="text-xs text-gray-500 mt-0.5">{pageLabel}</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-100 px-3 py-1.5 rounded-full">

@@ -3,6 +3,7 @@ import { AuthContext } from "../context/authContext";
 import { useNavigate, Link } from "react-router-dom";
 import registerill from "../assets/Sign up-amico.png";
 import { toast } from "react-toastify";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 const Register = () => {
   const { register } = useContext(AuthContext);
@@ -17,6 +18,7 @@ const Register = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   /* =========================
      HELPERS
@@ -40,11 +42,16 @@ const Register = () => {
     if (!firstName) {
       nextErrors.firstName = "First name is required";
     } else if (!nameRegex.test(firstName)) {
-      nextErrors.firstName = "Only letters and spaces allowed";
-    } else if (firstName.length < 1) {
-      nextErrors.firstName = "Minimum 1 character required";
+      nextErrors.firstName = "Only letters are allowed";
     } else if (firstName.length > 50) {
       nextErrors.firstName = "Maximum 50 characters allowed";
+    }
+
+    // LAST NAME (optional — validate only if provided)
+    if (lastName && !nameRegex.test(lastName)) {
+      nextErrors.lastName = "Only letters are allowed";
+    } else if (lastName && lastName.length > 50) {
+      nextErrors.lastName = "Maximum 50 characters allowed";
     }
 
     // EMAIL
@@ -105,9 +112,10 @@ const Register = () => {
       return;
     }
 
+    const trimmedLastName = cleanString(form.lastName);
     const payload = {
       firstName: cleanString(form.firstName),
-      lastName: cleanString(form.lastName),
+      ...(trimmedLastName && { lastName: trimmedLastName }),
       email: form.email.trim().toLowerCase(),
       password: form.password,
     };
@@ -167,14 +175,17 @@ const Register = () => {
             )}
           </div>
 
-          {/* LAST NAME */}
+          {/* LAST NAME (Optional) */}
           <div>
-            <label className="text-sm font-medium">Last Name</label>
+            <label className="text-sm font-medium">
+              Last Name{" "}
+              <span className="text-gray-400 font-normal text-xs">(Optional)</span>
+            </label>
             <input
               name="lastName"
               value={form.lastName}
               onChange={handleChange}
-              placeholder="Enter last name"
+              placeholder="Enter last name (optional)"
               className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 ${
                 errors.lastName ? "border border-red-500" : ""
               }`}
@@ -205,16 +216,26 @@ const Register = () => {
           {/* PASSWORD */}
           <div>
             <label className="text-sm font-medium">Password</label>
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 ${
-                errors.password ? "border border-red-500" : ""
-              }`}
-            />
+            <div className="relative mt-1">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                className={`w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 ${
+                  errors.password ? "border border-red-500" : ""
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                tabIndex={-1}
+              >
+                {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-red-600 mt-1">{errors.password}</p>
             )}

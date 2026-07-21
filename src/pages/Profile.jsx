@@ -338,9 +338,15 @@ const Profile = () => {
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   <div className="w-20 h-20 rounded-full ring-4 ring-[#a435f0]/30 overflow-hidden bg-[#a435f0] flex items-center justify-center text-white text-2xl font-extrabold shadow-xl">
-                    {user.avatar
-                      ? <img src={user.avatar} className="w-full h-full object-cover" alt="avatar" />
-                      : initials}
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.firstName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      initials
+                    )}
                   </div>
                   <button
                     onClick={() => setShowModal(true)}

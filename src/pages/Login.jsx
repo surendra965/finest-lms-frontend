@@ -3,6 +3,7 @@ import { AuthContext } from "../context/authContext";
 import { useNavigate, Link } from "react-router-dom";
 import loginill from "../assets/Computer login-amico.png";
 import { toast } from "react-toastify";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -15,6 +16,7 @@ const Login = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   /* =========================
      VALIDATION
@@ -76,11 +78,15 @@ const Login = () => {
 
     if (result.success) {
       toast.success("Logged in successfully!");
-      navigate("/");
+      // Redirect admin directly to admin panel
+      if (result.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
       return;
     }
 
-    // ❌ removed serverError state
     toast.error(result.message || "Invalid email or password");
   };
 
@@ -123,16 +129,26 @@ const Login = () => {
 
           {/* PASSWORD */}
           <label className="text-sm font-medium">Password</label>
-          <input
-            name="password"
-            type="password"
-            value={form.password}
-            placeholder="Enter your password"
-            onChange={handleChange}
-            className={`w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 focus:outline-none ${
-              errors.password ? "border border-red-500" : ""
-            }`}
-          />
+          <div className="relative mt-1 mb-1">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              placeholder="Enter your password"
+              onChange={handleChange}
+              className={`w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 focus:outline-none ${
+                errors.password ? "border border-red-500" : ""
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+              tabIndex={-1}
+            >
+              {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+            </button>
+          </div>
           {errors.password && (
             <p className="mt-1 mb-3 text-sm text-red-600">{errors.password}</p>
           )}
@@ -155,7 +171,7 @@ const Login = () => {
 
           {/* REGISTER */}
           <p className="mt-6 text-sm text-center">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link to="/api/auth/register" className="text-purple-600 hover:underline">
               Register
             </Link>

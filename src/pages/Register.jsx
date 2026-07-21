@@ -233,7 +233,7 @@ const Register = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer"
                 tabIndex={-1}
               >
-                {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                {showPassword ? <LuEye size={18} /> : <LuEyeOff size={18} />}
               </button>
             </div>
             {errors.password && (

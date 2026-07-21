@@ -129,7 +129,7 @@ const ChangePassword = () => {
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer bg-transparent border-none"
                                 tabIndex={-1}
                             >
-                                {showCurrentPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                                {showCurrentPassword ? <LuEye size={18} /> : <LuEyeOff size={18} />}
                             </button>
                         </div>
                         {errors.currentPassword && (
@@ -158,7 +158,7 @@ const ChangePassword = () => {
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer bg-transparent border-none"
                                 tabIndex={-1}
                             >
-                                {showNewPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                                {showNewPassword ? <LuEye size={18} /> : <LuEyeOff size={18} />}
                             </button>
                         </div>
                         {errors.newPassword && (
@@ -187,7 +187,7 @@ const ChangePassword = () => {
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition cursor-pointer bg-transparent border-none"
                                 tabIndex={-1}
                             >
-                                {showConfirmPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                                {showConfirmPassword ? <LuEye size={18} /> : <LuEyeOff size={18} />}
                             </button>
                         </div>
                         {errors.confirmPassword && (

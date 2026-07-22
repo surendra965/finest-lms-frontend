@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { AuthContext } from "../context/authContext";
 import { LuCircleCheck, LuLoader, LuSave, LuSend } from "react-icons/lu";
 import { createCourse, submitCourseForReview } from "../services/courseService";
 import { getCategories } from "../services/categoryService";
@@ -15,6 +16,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 
 const CreateCourseDetails = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const { course, setCourse, loadCourse, sections, loadSections, loadLectures } = useCourse();
 
   const [activeTab, setActiveTabState] = useState("learners");
@@ -382,14 +384,20 @@ const CreateCourseDetails = () => {
     setSubmitting(true);
     try {
       await submitCourseForReview(courseId);
-      toast.success("Your course has been submitted for admin review! 🎉");
+      toast.success(
+        user?.role === "admin"
+          ? "Your course has been successfully published! 🎉"
+          : "Your course has been submitted for admin review! 🎉"
+      );
       // Clean up draft data from local storage
       localStorage.removeItem("courseDraftId");
       localStorage.removeItem("courseDraft");
       localStorage.removeItem("courseDraftCreating");
       navigate("/instructor/courses");
     } catch (err) {
-      toast.error(err.message || "Failed to submit course for review.");
+      toast.error(
+        err.message || (user?.role === "admin" ? "Failed to publish course." : "Failed to submit course for review.")
+      );
     } finally {
       setSubmitting(false);
       setShowSubmitConfirm(false);
@@ -508,7 +516,13 @@ const CreateCourseDetails = () => {
                   className="inline-flex items-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-5 py-2.5 transition text-sm cursor-pointer"
                 >
                   <LuSend size={16} />
-                  {submitting ? "Submitting..." : "Submit for Review"}
+                  {submitting
+                    ? user?.role === "admin"
+                      ? "Publishing..."
+                      : "Submitting..."
+                    : user?.role === "admin"
+                      ? "Publish Course"
+                      : "Submit for Review"}
                 </button>
               )}
             </div>
@@ -533,10 +547,12 @@ const CreateCourseDetails = () => {
                 <LuCircleCheck size={20} className="text-green-600 shrink-0" />
                 <div>
                   <p className="font-bold text-green-800 text-sm">
-                    Your course is ready for review!
+                    {user?.role === "admin" ? "Your course is ready to publish!" : "Your course is ready for review!"}
                   </p>
                   <p className="text-green-700 text-xs mt-0.5">
-                    All sections are complete. Submit to the admin team for approval.
+                    {user?.role === "admin"
+                      ? "All sections are complete. Publish your course to make it visible to students."
+                      : "All sections are complete. Submit to the admin team for approval."}
                   </p>
                 </div>
               </div>
@@ -554,9 +570,13 @@ const CreateCourseDetails = () => {
         open={showSubmitConfirm}
         onConfirm={handleSubmitForReview}
         onCancel={() => setShowSubmitConfirm(false)}
-        title="Submit for Review?"
-        message="Once submitted, your course will be reviewed by the admin team. You won't be able to edit it until the review is complete."
-        confirmText="Yes, Submit"
+        title={user?.role === "admin" ? "Publish Course?" : "Submit for Review?"}
+        message={
+          user?.role === "admin"
+            ? "Are you sure you want to publish this course? It will immediately become visible to learners."
+            : "Once submitted, your course will be reviewed by the admin team. You won't be able to edit it until the review is complete."
+        }
+        confirmText={user?.role === "admin" ? "Yes, Publish" : "Yes, Submit"}
         cancelText="Cancel"
         variant="info"
       />

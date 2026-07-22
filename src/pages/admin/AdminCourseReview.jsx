@@ -89,7 +89,7 @@ const AdminCourseReview = () => {
     setActing("approve");
     try {
       await approveCourse(courseId);
-      toast.success("✅ Course approved and published!");
+      toast.success("Course approved and published!");
       navigate("/admin/courses/pending");
     } catch (err) {
       toast.error(err.message || "Approval failed");
@@ -351,8 +351,8 @@ const AdminCourseReview = () => {
                                           setReviewedLectures((prev) => ({ ...prev, [lec._id]: true }));
                                         }}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border-none ${isReviewing
-                                            ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
-                                            : "bg-purple-600 text-white hover:bg-purple-700"
+                                          ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                          : "bg-purple-600 text-white hover:bg-purple-700"
                                           }`}
                                       >
                                         <LuPlay size={12} />
@@ -367,8 +367,8 @@ const AdminCourseReview = () => {
                                           }));
                                         }}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border ${isReviewed
-                                            ? "bg-green-100 text-green-700 border-green-200"
-                                            : "bg-gray-150 text-gray-600 hover:bg-gray-200 border-gray-300"
+                                          ? "bg-green-100 text-green-700 border-green-200"
+                                          : "bg-gray-150 text-gray-600 hover:bg-gray-200 border-gray-300"
                                           }`}
                                       >
                                         {isReviewed ? "✓ Reviewed" : "Mark Reviewed"}

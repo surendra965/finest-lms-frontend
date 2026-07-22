@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authFetch } from "../utils/auth";
 import { toast } from "react-toastify";
+import { AuthContext } from "../context/authContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { AiFillStar, AiOutlineTeam, AiOutlineGlobal, AiOutlineClockCircle, AiOutlineBook, AiOutlineEdit, AiOutlineFileText, AiOutlineDelete, AiOutlinePlusCircle, AiOutlinePauseCircle, AiFillCheckCircle, AiFillDollarCircle, AiOutlineBarChart, AiOutlineClose } from "react-icons/ai";
 import { BsFillPlayFill } from "react-icons/bs";
@@ -30,6 +31,7 @@ const InfoRow = ({ icon, label, value }) => (
 const InstructorCourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [course, setCourse] = useState(null);
@@ -286,7 +288,7 @@ const InstructorCourseDetails = () => {
                     "Pending Review"
                   ) : (
                     <>
-                      <AiOutlinePlusCircle size={18} /> Submit for Review
+                      <AiOutlinePlusCircle size={18} /> {user?.role === "admin" ? "Publish Course" : "Submit for Review"}
                     </>
                   )}
                 </button>
@@ -403,7 +405,7 @@ const InstructorCourseDetails = () => {
                       "Pending Review"
                     ) : (
                       <span className="inline-flex items-center gap-2 justify-center">
-                        <AiOutlinePlusCircle size={18} /> Submit for Review
+                        <AiOutlinePlusCircle size={18} /> {user?.role === "admin" ? "Publish Course" : "Submit for Review"}
                       </span>
                     )}
                   </button>
@@ -432,7 +434,9 @@ const InstructorCourseDetails = () => {
                           ? "Your course has been submitted for review. It will be live once approved."
                           : course.status === "rejected"
                             ? "This course was rejected. Please review issues and submit again."
-                            : "This course is a draft. Submit it for review to make it visible to students."}
+                            : user?.role === "admin"
+                              ? "This course is a draft. Publish it to make it visible to students."
+                              : "This course is a draft. Submit it for review to make it visible to students."}
                     </p>
                   </div>
                 </div>

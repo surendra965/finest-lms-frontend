@@ -147,16 +147,44 @@ const CourseLandingPage = ({ course, courseId, refreshCourse, onNext }) => {
   };
 
   /* ── VALIDATION ── */
-  const validate = () => {
-    if (!form.title.trim()) { toast.error("Course title is required"); return false; }
-    if (!form.subtitle.trim()) { toast.error("Subtitle is required"); return false; }
-    if (!form.description.trim()) { toast.error("Description is required"); return false; }
+  const validate = (isNextCheck = false) => {
+    const titleVal = form.title.trim();
+    if (!titleVal) {
+      toast.error("Course title is required");
+      return false;
+    }
+    if (isNextCheck) {
+      if (titleVal.length < 5) {
+        toast.error("Course title must be at least 5 characters long.");
+        return false;
+      }
+      if (/[0-9]/.test(titleVal)) {
+        toast.error("Course title must not contain numbers.");
+        return false;
+      }
+      if (!form.subtitle.trim()) {
+        toast.error("Subtitle is required to proceed.");
+        return false;
+      }
+      if (!form.description.trim()) {
+        toast.error("Description is required to proceed.");
+        return false;
+      }
+      if (!form.categoryId) {
+        toast.error("Please select a category.");
+        return false;
+      }
+      if (!course?.thumbnail) {
+        toast.error("Please upload a course thumbnail. A visual cover represents your course landing page.");
+        return false;
+      }
+    }
     return true;
   };
 
   /* ── SAVE COURSE ── */
   const handleSave = async (shouldNavigateNext = false) => {
-    if (!validate()) return;
+    if (!validate(shouldNavigateNext)) return;
     if (!effectiveCourseId) {
       toast.error("Unable to update course: missing course ID.");
       return;

@@ -164,9 +164,11 @@ const AdminPendingCourses = () => {
                     <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-2.5">
                       <span className="flex items-center gap-1.5 text-xs text-gray-500">
                         <LuUser size={13} className="text-gray-400" />
-                        {course.instructorId?.userId?.firstName ||
-                          course.instructorId?.firstName ||
-                          "Instructor"}
+                        {course.instructorId?.userId
+                          ? (course.instructorId.userId.lastName ? `${course.instructorId.userId.firstName} ${course.instructorId.userId.lastName}` : course.instructorId.userId.firstName)
+                          : course.instructorId?.firstName
+                            ? (course.instructorId.lastName ? `${course.instructorId.firstName} ${course.instructorId.lastName}` : course.instructorId.firstName)
+                            : "Instructor"}
                       </span>
                       {course.categoryId?.name && (
                         <span className="flex items-center gap-1.5 text-xs text-gray-500">

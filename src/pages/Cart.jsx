@@ -186,7 +186,7 @@ const Cart = () => {
                     Cart Items
                   </div>
                   {items.map((item) => (
-                    <CartItem key={item.courseId?._id || item.courseId} item={item} onRemove={handleRemove}/>
+                    <CartItem key={item.courseId?._id || item.courseId} item={item} onRemove={handleRemove} />
                   ))}
                 </div>
 
@@ -246,12 +246,12 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <div className="relative group">
+                <div className="relative group/slider">
                   {/* Left Arrow */}
                   {popularCourses.length > 1 && (
                     <button
                       onClick={scrollLeft}
-                      className="absolute left-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="absolute left-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover/slider:opacity-100 transition-opacity duration-200"
                       title="Scroll Left"
                     >
                       <LuChevronLeft size={16} />
@@ -270,7 +270,7 @@ const Cart = () => {
                       }
                     `}</style>
                     {popularCourses.map((course) => (
-                      <div key={course._id} className="w-[280px] shrink-0 transform duration-200 hover:-translate-y-1">
+                      <div key={course._id} className="w-[280px] shrink-0">
                         <CourseCard course={course} />
                       </div>
                     ))}
@@ -280,7 +280,7 @@ const Cart = () => {
                   {popularCourses.length > 1 && (
                     <button
                       onClick={scrollRight}
-                      className="absolute right-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="absolute right-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover/slider:opacity-100 transition-opacity duration-200"
                       title="Scroll Right"
                     >
                       <LuChevronRight size={16} />

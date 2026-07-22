@@ -62,20 +62,20 @@ const HorizontalCourseSlider = ({ courses }) => {
   };
 
   return (
-    <div className="relative group">
+    <div className="relative group/slider">
       {/* Scroll controls */}
       {courses.length > 1 && (
         <>
           <button
             onClick={() => scroll("left")}
-            className="absolute left-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="absolute left-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover/slider:opacity-100 transition-opacity duration-200"
             title="Scroll Left"
           >
             <HiOutlineChevronLeft size={16} />
           </button>
           <button
             onClick={() => scroll("right")}
-            className="absolute right-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="absolute right-[-16px] top-[40%] -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md opacity-0 group-hover/slider:opacity-100 transition-opacity duration-200"
             title="Scroll Right"
           >
             <HiOutlineChevronRight size={16} />
@@ -89,7 +89,7 @@ const HorizontalCourseSlider = ({ courses }) => {
         style={{ scrollbarWidth: "none" }}
       >
         {courses.map((course) => (
-          <div key={course._id} className="w-[280px] shrink-0 transform duration-200 hover:-translate-y-1">
+          <div key={course._id} className="w-[280px] shrink-0">
             <CourseCard course={course} />
           </div>
         ))}
@@ -249,19 +249,6 @@ const Home = () => {
         {/* Layout successfully loaded */}
         {!loading && !error && (
           <>
-            {/* 1. Recent Search Personalization */}
-            {recentSearchTerm && recentSearchCourses.length > 0 && (
-              <section className="animate-in fade-in transition duration-300">
-                <SectionHeader
-                  title={`Based on your search for "${recentSearchTerm}"`}
-                  subtitle="Picked directly matching your request patterns"
-                  icon={HiOutlineSearch}
-                  badge="Personalized"
-                />
-                <HorizontalCourseSlider courses={recentSearchCourses} />
-              </section>
-            )}
-
             {/* 2. Recommended Courses Section */}
             {recommended.length > 0 && (
               <section>
@@ -272,6 +259,19 @@ const Home = () => {
                   badge="Recommended"
                 />
                 <HorizontalCourseSlider courses={recommended} />
+              </section>
+            )}
+
+            {/* 1. Recent Search Personalization */}
+            {recentSearchTerm && recentSearchCourses.length > 0 && (
+              <section className="animate-in fade-in transition duration-300">
+                <SectionHeader
+                  title={`Based on your search for "${recentSearchTerm}"`}
+                  subtitle="Picked directly matching your request patterns"
+                  icon={HiOutlineSearch}
+                  badge="Personalized"
+                />
+                <HorizontalCourseSlider courses={recentSearchCourses} />
               </section>
             )}
 

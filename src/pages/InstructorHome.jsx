@@ -111,7 +111,7 @@ const InstructorHome = () => {
                   {user?.role === "admin" ? "Admin Course Dashboard" : "Instructor Dashboard"}
                 </p>
                 <h1 className="text-white text-xl font-extrabold leading-tight">
-                  {user?.firstName} {user?.lastName}
+                  {user?.lastName ? `${user.firstName} ${user.lastName}` : user?.firstName}
                 </h1>
                 {user?.email && (
                   <p className="text-white text-xs mt-0.5">{user.email}</p>

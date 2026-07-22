@@ -120,7 +120,7 @@ const AdminLayout = ({ children }) => {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate group-hover:text-purple-300 transition">
-                {user?.firstName} {user?.lastName}
+                {user?.lastName ? `${user.firstName} ${user.lastName}` : user?.firstName}
               </p>
               <p className="text-[11px] text-purple-400 font-bold uppercase tracking-wide">
                 Administrator

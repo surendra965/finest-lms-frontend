@@ -78,14 +78,14 @@ const EditModal = ({ user, onClose, onSave }) => {
 
   const [form, setForm] = useState({
     firstName: user.firstName || "",
-    lastName:  user.lastName  || "",
-    phone:     user.phone     || "",
-    avatar:    user.avatar    || null,
+    lastName: user.lastName || "",
+    phone: user.phone || "",
+    avatar: user.avatar || null,
   });
-  const [preview,    setPreview]    = useState(user.avatar || null);
+  const [preview, setPreview] = useState(user.avatar || null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarRemoved, setAvatarRemoved] = useState(false);
-  const [loading,    setLoading]    = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -100,7 +100,7 @@ const EditModal = ({ user, onClose, onSave }) => {
   };
 
   const validate = () => {
-    if (!form.firstName.trim() || !form.lastName.trim()) return "First and last name are required.";
+    if (!form.firstName.trim()) return "First name is required.";
     if (form.phone && !/^[6-9]\d{9}$/.test(form.phone)) return "Enter a valid 10-digit phone number.";
     return "";
   };
@@ -146,14 +146,14 @@ const EditModal = ({ user, onClose, onSave }) => {
         avatarUrl = uploaded?.avatar || uploaded?.url || avatarUrl;
       }
 
-      const res  = await authFetch(`${API_URL}/api/users/profile`, {
+      const res = await authFetch(`${API_URL}/api/users/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName: form.firstName.trim(),
-          lastName:  form.lastName.trim(),
-          phone:     form.phone || "",
-          avatar:    avatarUrl  || null,
+          lastName: form.lastName.trim(),
+          phone: form.phone || "",
+          avatar: avatarUrl || null,
         }),
       });
 
@@ -236,10 +236,10 @@ const EditModal = ({ user, onClose, onSave }) => {
         <div className="px-6 pb-6 flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="First Name" id="firstName" value={form.firstName} onChange={set("firstName")} placeholder="John" icon={<LuUser size={18} className="text-[#6a6f73]" />} />
-            <Field label="Last Name"  id="lastName"  value={form.lastName}  onChange={set("lastName")}  placeholder="Doe" />
+            <Field label="Last Name" id="lastName" value={form.lastName} onChange={set("lastName")} placeholder="Doe" />
           </div>
           <Field label="Email Address" id="email" type="email" value={user.email} readOnly icon={<MdOutlineEmail size={18} className="text-[#6a6f73]" />} />
-          <Field label="Phone Number"  id="phone" type="tel"   value={form.phone} onChange={set("phone")} placeholder="9876543210" icon={<FiPhone size={18} className="text-[#6a6f73]" />} />
+          <Field label="Phone Number" id="phone" type="tel" value={form.phone} onChange={set("phone")} placeholder="9876543210" icon={<FiPhone size={18} className="text-[#6a6f73]" />} />
 
           {/* Info note */}
           <div className="flex items-start gap-2.5 bg-[#f0e6ff] border border-[#c6a3f7] rounded px-4 py-3 text-[12px] text-[#5c2d91]">
@@ -278,17 +278,17 @@ const EditModal = ({ user, onClose, onSave }) => {
 ══════════════════════════════════════════ */
 const Profile = () => {
   const { logout } = useContext(AuthContext);
-  const navigate   = useNavigate();
-  const API_URL    = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  const [user,       setUser]       = useState(null);
+  const [user, setUser] = useState(null);
   const [instructor, setInstructor] = useState(null);
-  const [showModal,  setShowModal]  = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const res  = await authFetch(`${API_URL}/api/users/profile`);
+        const res = await authFetch(`${API_URL}/api/users/profile`);
         const data = await res.json();
         if (!res.ok) { logout(); navigate("/api/auth/login"); return; }
         setUser(data.data);
@@ -363,7 +363,7 @@ const Profile = () => {
                     {isInstructor ? "Instructor Account" : "Student Account"}
                   </p>
                   <h1 className="text-white text-2xl font-extrabold leading-tight">
-                    {user.firstName} {user.lastName}
+                    {user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName}
                   </h1>
                   <p className="text-[#6a6f73] text-sm mt-0.5">{user.email}</p>
                   {user.phone && (
@@ -394,15 +394,15 @@ const Profile = () => {
             {/* Stats row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-[#3e4143]">
               <StatCard icon={<LuUser size={22} className="mx-auto" />} label="Account Type" value={user.role?.charAt(0).toUpperCase() + user.role?.slice(1)} />
-              <StatCard icon={<AiOutlineCalendar size={22} className="mx-auto" />} label="Member Since"  value={new Date(user.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} />
+              <StatCard icon={<AiOutlineCalendar size={22} className="mx-auto" />} label="Member Since" value={user.createdAt && !isNaN(new Date(user.createdAt).getTime()) ? new Date(user.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : "—"} />
               {isInstructor && instructor ? (
                 <>
-                  <StatCard icon={<AiOutlineBook size={22} className="mx-auto" />} label="Total Courses"  value={instructor.totalCourses  ?? "—"} />
+                  <StatCard icon={<AiOutlineBook size={22} className="mx-auto" />} label="Total Courses" value={instructor.totalCourses ?? "—"} />
                   <StatCard icon={<AiOutlineTeam size={22} className="mx-auto" />} label="Total Students" value={instructor.totalStudents ?? "—"} />
                 </>
               ) : (
                 <>
-                  <StatCard icon={<FiPhone size={22} className="mx-auto" />} label="Phone"  value={user.phone || "Not added"} />
+                  <StatCard icon={<FiPhone size={22} className="mx-auto" />} label="Phone" value={user.phone || "Not added"} />
                   <StatCard icon={<AiFillCheckCircle size={22} className="mx-auto" />} label="Status" value="Active" />
                 </>
               )}
@@ -425,7 +425,7 @@ const Profile = () => {
               </h3>
               <ul className="space-y-3 text-[15px] text-[#1c1d1f]">
                 <li className="flex items-center gap-2.5">
-                  <span className="text-[#6a6f73] w-4 flex-shrink-0"><MdOutlineEmail size={20} className="text-black"/></span>
+                  <span className="text-[#6a6f73] w-4 flex-shrink-0"><MdOutlineEmail size={20} className="text-black" /></span>
                   <span className="truncate">{user.email}</span>
                 </li>
                 <li className="flex items-center gap-2.5">
@@ -450,11 +450,11 @@ const Profile = () => {
               </h3>
               <div className="space-y-0.5">
                 {[
-                  { label: "Edit personal info",  icon: <AiOutlineEdit size={18} className="font-bold" />, onClick: () => setShowModal(true),               style: "text-[#a435f0] hover:bg-[#f7f0ff]" },
-                  { label: "Change password",     icon: <RiLockPasswordLine size={18} className="font-bold" />, onClick: () => navigate("/change-password"),      style: "text-[#1c1d1f] hover:bg-[#f7f9fa]" },
+                  { label: "Edit personal info", icon: <AiOutlineEdit size={18} className="font-bold" />, onClick: () => setShowModal(true), style: "text-[#a435f0] hover:bg-[#f7f0ff]" },
+                  { label: "Change password", icon: <RiLockPasswordLine size={18} className="font-bold" />, onClick: () => navigate("/change-password"), style: "text-[#1c1d1f] hover:bg-[#f7f9fa]" },
                   ...(isInstructor ? [{ label: "My courses", icon: <AiOutlineBook size={18} className="font-bold" />, onClick: () => navigate("/instructor/home"), style: "text-[#1c1d1f] hover:bg-[#f7f9fa]" }] : []),
-                  { label: "Logout",              icon: <LuLogOut size={20} className="stroke-[2.5]"/> , onClick: () => { logout(); navigate("/"); },       style: "text-[#1c1d1f] hover:bg-[#f7f9fa]" },
-                  { label: "Delete account",      icon: <FiTrash2 size={18} className="font-bold" />, onClick: handleDelete,                            style: "text-[#c0392b] hover:bg-[#fef2f2]" },
+                  { label: "Logout", icon: <LuLogOut size={20} className="stroke-[2.5]" />, onClick: () => { logout(); navigate("/"); }, style: "text-[#1c1d1f] hover:bg-[#f7f9fa]" },
+                  { label: "Delete account", icon: <FiTrash2 size={18} className="font-bold" />, onClick: handleDelete, style: "text-[#c0392b] hover:bg-[#fef2f2]" },
                 ].map(({ label, icon, onClick, style }) => (
                   <button
                     key={label}
@@ -484,10 +484,10 @@ const Profile = () => {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <InfoTile label="First Name"    value={user.firstName} />
-                <InfoTile label="Last Name"     value={user.lastName} />
+                <InfoTile label="First Name" value={user.firstName} />
+                <InfoTile label="Last Name" value={user.lastName} />
                 <InfoTile label="Email Address" value={user.email} />
-                <InfoTile label="Phone Number"  value={user.phone} />
+                <InfoTile label="Phone Number" value={user.phone} />
                 <InfoTile
                   label="Account Role"
                   value={
@@ -499,7 +499,7 @@ const Profile = () => {
                 />
                 <InfoTile
                   label="Member Since"
-                  value={new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                  value={user.createdAt && !isNaN(new Date(user.createdAt).getTime()) ? new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "—"}
                 />
               </div>
             </div>
@@ -515,9 +515,9 @@ const Profile = () => {
                 {/* Instructor stat cards */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   {[
-                    { label: "Total Courses",  value: instructor.totalCourses  ?? "—", icon: <AiOutlineBook size={26} className="mx-auto" />, color: "bg-[#f7f0ff] text-[#a435f0]" },
+                    { label: "Total Courses", value: instructor.totalCourses ?? "—", icon: <AiOutlineBook size={26} className="mx-auto" />, color: "bg-[#f7f0ff] text-[#a435f0]" },
                     { label: "Total Students", value: instructor.totalStudents ?? "—", icon: <AiOutlineTeam size={26} className="mx-auto" />, color: "bg-[#ecfdf5] text-[#065f46]" },
-                    { label: "Avg. Rating",    value: instructor.averageRating ?? "—", icon: <AiFillStar size={26} className="mx-auto" />, color: "bg-[#fef9c3] text-[#854d0e]" },
+                    { label: "Avg. Rating", value: instructor.averageRating ?? "—", icon: <AiFillStar size={26} className="mx-auto" />, color: "bg-[#fef9c3] text-[#854d0e]" },
                   ].map(({ label, value, icon, color }) => (
                     <div key={label} className={`${color} rounded-lg px-4 py-4 text-center`}>
                       <p className="text-2xl mb-1">{icon}</p>
@@ -530,7 +530,7 @@ const Profile = () => {
                 {/* Instructor profile fields */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   {[
-                    { label: "Headline",  value: instructor.headline },
+                    { label: "Headline", value: instructor.headline },
                     { label: "Biography", value: instructor.biography },
                     { label: "Expertise", value: instructor.expertise?.join(", ") },
                   ].filter(({ value }) => value).map(({ label, value }) => (

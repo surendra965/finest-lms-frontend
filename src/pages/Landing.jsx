@@ -408,7 +408,7 @@ const Landing = () => {
                             style={{ scrollbarWidth: "none" }}
                         >
                             {courses.map((c) => (
-                                <div key={c._id} className="w-[280px] shrink-0 transform duration-150 hover:-translate-y-1">
+                                <div key={c._id} className="w-[280px] shrink-0">
                                     <CourseCard course={c} />
                                 </div>
                             ))}

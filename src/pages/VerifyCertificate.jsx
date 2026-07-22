@@ -77,7 +77,9 @@ const VerifyCertificate = () => {
                                 <LuUser className="text-purple-600 shrink-0 mt-0.5" size={20} />
                                 <div>
                                     <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Enrolled Graduate/Student</p>
-                                    <p className="text-base font-bold text-slate-900">{cert.studentId?.firstName} {cert.studentId?.lastName}</p>
+                                    <p className="text-base font-bold text-slate-900">
+                                        {cert.studentId?.lastName ? `${cert.studentId.firstName} ${cert.studentId.lastName}` : cert.studentId?.firstName}
+                                    </p>
                                 </div>
                             </div>
 

@@ -46,9 +46,10 @@ const AdminDashboard = () => {
 
           if (rawData.recentUsers) {
             rawData.recentUsers.forEach(u => {
+              const uName = u.lastName ? `${u.firstName} ${u.lastName}` : u.firstName;
               combinedActivity.push({
                 type: "user",
-                message: `New ${u.role === "instructor" ? "Instructor" : "Student"} registered: ${u.firstName} ${u.lastName} (${u.email})`,
+                message: `New ${u.role === "instructor" ? "Instructor" : "Student"} registered: ${uName} (${u.email})`,
                 timestamp: u.createdAt,
               });
             });
@@ -56,7 +57,9 @@ const AdminDashboard = () => {
 
           if (rawData.recentEnrollments) {
             rawData.recentEnrollments.forEach(e => {
-              const studentName = e.studentId ? `${e.studentId.firstName} ${e.studentId.lastName}` : "A student";
+              const studentName = e.studentId
+                ? (e.studentId.lastName ? `${e.studentId.firstName} ${e.studentId.lastName}` : e.studentId.firstName)
+                : "A student";
               const courseTitle = e.courseId ? e.courseId.title : "a course";
               combinedActivity.push({
                 type: "enrollment",
@@ -68,7 +71,9 @@ const AdminDashboard = () => {
 
           if (rawData.recentPayments) {
             rawData.recentPayments.forEach(p => {
-              const userName = p.userId ? `${p.userId.firstName} ${p.userId.lastName}` : "Someone";
+              const userName = p.userId
+                ? (p.userId.lastName ? `${p.userId.firstName} ${p.userId.lastName}` : p.userId.firstName)
+                : "Instructor";
               const courseTitle = p.courseId ? p.courseId.title : "a course";
               combinedActivity.push({
                 type: "payment",
@@ -123,14 +128,14 @@ const AdminDashboard = () => {
 
   // Filtered lists
   const filteredStudents = (stats?.students || []).filter((s) => {
-    const fullName = `${s.firstName || ""} ${s.lastName || ""}`.toLowerCase();
+    const fullName = `${s.firstName || ""} ${s.lastName || ""}`.trim().toLowerCase();
     const email = (s.email || "").toLowerCase();
     const query = studentSearch.toLowerCase();
     return fullName.includes(query) || email.includes(query);
   });
 
   const filteredInstructors = (stats?.instructors || []).filter((inst) => {
-    const fullName = `${inst.firstName || ""} ${inst.lastName || ""}`.toLowerCase();
+    const fullName = `${inst.firstName || ""} ${inst.lastName || ""}`.trim().toLowerCase();
     const email = (inst.email || "").toLowerCase();
     const query = instructorSearch.toLowerCase();
     return fullName.includes(query) || email.includes(query);
@@ -385,14 +390,14 @@ const AdminDashboard = () => {
                                   {student.avatar ? (
                                     <img
                                       src={student.avatar}
-                                      alt={`${student.firstName} ${student.lastName}`}
+                                      alt={student.lastName ? `${student.firstName} ${student.lastName}` : student.firstName}
                                       className="w-full h-full object-cover"
                                     />
                                   ) : (
                                     `${student.firstName?.charAt(0) || ""}${student.lastName?.charAt(0) || ""}`
                                   )}
                                 </div>
-                                <span>{student.firstName} {student.lastName}</span>
+                                <span>{student.lastName ? `${student.firstName} ${student.lastName}` : student.firstName}</span>
                               </div>
                             </td>
                             <td className="py-4 px-6 text-slate-500 font-mono text-xs">{student.email}</td>
@@ -466,14 +471,14 @@ const AdminDashboard = () => {
                                   {inst.avatar ? (
                                     <img
                                       src={inst.avatar}
-                                      alt={`${inst.firstName} ${inst.lastName}`}
+                                      alt={inst.lastName ? `${inst.firstName} ${inst.lastName}` : inst.firstName}
                                       className="w-full h-full object-cover"
                                     />
                                   ) : (
                                     `${inst.firstName?.charAt(0) || ""}${inst.lastName?.charAt(0) || ""}`
                                   )}
                                 </div>
-                                <span>{inst.firstName} {inst.lastName}</span>
+                                <span>{inst.lastName ? `${inst.firstName} ${inst.lastName}` : inst.firstName}</span>
                               </div>
                             </td>
                             <td className="py-4 px-6 text-slate-500 font-mono text-xs">{inst.email}</td>

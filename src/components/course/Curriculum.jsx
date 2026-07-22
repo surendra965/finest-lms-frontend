@@ -135,6 +135,25 @@ const Curriculum = ({ course, onNext }) => {
 
   const inputClass = "w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 text-sm transition";
 
+  const validate = () => {
+    if (!Array.isArray(sections) || sections.length === 0) {
+      toast.error("Please add at least one section to your curriculum.");
+      return false;
+    }
+    const hasEmptySection = sections.some(
+      (sec) =>
+        !(
+          (sec.totalLectures && sec.totalLectures > 0) ||
+          (sec.lectures && sec.lectures.length > 0)
+        )
+    );
+    if (hasEmptySection) {
+      toast.error("Every section in your curriculum must contain at least one lecture.");
+      return false;
+    }
+    return true;
+  };
+
   return (
     <div className="space-y-6 p-8">
       {/* ── HEADER ── */}
@@ -258,7 +277,7 @@ const Curriculum = ({ course, onNext }) => {
       <div className="bg-white border border-gray-200 rounded-xl px-6 py-4 flex justify-end mt-6">
         <button
           onClick={() => {
-            if (onNext) onNext();
+            if (validate() && onNext) onNext();
           }}
           className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg font-semibold transition cursor-pointer text-sm"
         >

@@ -6,7 +6,7 @@ const CourseHeader = ({ course }) => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b sticky top-0 z-40">
+    <header className="bg-white border-b sticky top-0 z-10">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-4">
 
         <div className="flex items-center gap-5">

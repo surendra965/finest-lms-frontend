@@ -193,7 +193,11 @@ const AdminCourseReview = () => {
               <div className="flex flex-wrap items-center gap-4 mt-4">
                 <span className="flex items-center gap-1.5 text-xs text-gray-400">
                   <LuUser size={13} />
-                  {course.instructorId?.userId?.firstName || course.instructorId?.firstName || "Instructor"}
+                  {course.instructorId?.userId
+                    ? (course.instructorId.userId.lastName ? `${course.instructorId.userId.firstName} ${course.instructorId.userId.lastName}` : course.instructorId.userId.firstName)
+                    : course.instructorId?.firstName
+                      ? (course.instructorId.lastName ? `${course.instructorId.firstName} ${course.instructorId.lastName}` : course.instructorId.firstName)
+                      : "Instructor"}
                 </span>
                 <span className="flex items-center gap-1.5 text-xs text-gray-400">
                   <LuTag size={13} />
@@ -346,11 +350,10 @@ const AdminCourseReview = () => {
                                           // Automatically mark as reviewed if they open it
                                           setReviewedLectures((prev) => ({ ...prev, [lec._id]: true }));
                                         }}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border-none ${
-                                          isReviewing
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border-none ${isReviewing
                                             ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
                                             : "bg-purple-600 text-white hover:bg-purple-700"
-                                        }`}
+                                          }`}
                                       >
                                         <LuPlay size={12} />
                                         {isReviewing ? "Hide Video" : "Review Video"}
@@ -363,11 +366,10 @@ const AdminCourseReview = () => {
                                             [lec._id]: !prev[lec._id]
                                           }));
                                         }}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border ${
-                                          isReviewed
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border ${isReviewed
                                             ? "bg-green-100 text-green-700 border-green-200"
                                             : "bg-gray-150 text-gray-600 hover:bg-gray-200 border-gray-300"
-                                        }`}
+                                          }`}
                                       >
                                         {isReviewed ? "✓ Reviewed" : "Mark Reviewed"}
                                       </button>
@@ -426,9 +428,8 @@ const AdminCourseReview = () => {
             <button
               onClick={handleApprove}
               disabled={!!acting || !allVideosReviewed}
-              className={`flex items-center gap-2 font-bold px-6 py-3 rounded-xl transition cursor-pointer text-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                allVideosReviewed ? "bg-green-600 hover:bg-green-700" : "bg-gray-400"
-              }`}
+              className={`flex items-center gap-2 font-bold px-6 py-3 rounded-xl transition cursor-pointer text-white disabled:opacity-50 disabled:cursor-not-allowed ${allVideosReviewed ? "bg-green-600 hover:bg-green-700" : "bg-gray-400"
+                }`}
               title={!allVideosReviewed ? "All videos must be reviewed first" : ""}
             >
               {acting === "approve" ? (

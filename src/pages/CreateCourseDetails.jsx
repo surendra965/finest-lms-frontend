@@ -105,7 +105,7 @@ const CreateCourseDetails = () => {
     setActiveTabState(tab);
   };
 
-  const handleTabChange = (targetTab) => {
+  const handleTabChange = (targetTab, skipValidation = false) => {
     if (targetTab === activeTab) return;
 
     const tabOrder = ["learners", "landing", "curriculum", "pricing"];
@@ -113,7 +113,7 @@ const CreateCourseDetails = () => {
     const activeIdx = tabOrder.indexOf(activeTab);
 
     // If navigating forward
-    if (targetIdx > activeIdx) {
+    if (targetIdx > activeIdx && !skipValidation) {
       // Validate every tab from activeTab up to (but not including) targetTab
       for (let i = activeIdx; i < targetIdx; i++) {
         const stepToCheck = tabOrder[i];
@@ -146,7 +146,7 @@ const CreateCourseDetails = () => {
     const tabOrder = ["learners", "landing", "curriculum", "pricing"];
     const curIdx = tabOrder.indexOf(activeTab);
     if (curIdx !== -1 && curIdx < tabOrder.length - 1) {
-      handleTabChange(tabOrder[curIdx + 1]);
+      handleTabChange(tabOrder[curIdx + 1], true);
     } else {
       toast.success("Pricing step completed! Redirecting to course details...");
       navigate(`/instructor/course/${courseId}`);
@@ -266,8 +266,6 @@ const CreateCourseDetails = () => {
             "Course description will be updated soon.",
           language: localDraft.language || "English",
           level: "beginner",
-          price: 0,
-          discountPrice: 0,
           requirements: [],
           learningObjectives: [],
           targetAudience: [],

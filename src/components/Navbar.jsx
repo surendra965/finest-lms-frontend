@@ -856,7 +856,7 @@ const Navbar = () => {
                 All Courses
               </button>
 
-              {user?.role !== "admin" && (
+              {user?.role === "student" && (
                 <button
                   onClick={() => navigate("/learning")}
                   className="text-sm xl:text-base font-semibold text-gray-700 hover:text-purple-600 cursor-pointer"
@@ -1192,7 +1192,7 @@ const Navbar = () => {
                       All Courses
                     </Link>
 
-                    {user?.role !== "admin" && (
+                    {user?.role === "student" && (
                       <Link
                         to="/learning"
                         onClick={() => setMobileMenuOpen(false)}

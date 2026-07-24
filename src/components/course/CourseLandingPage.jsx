@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import {
   updateCourse,
@@ -46,9 +46,13 @@ const CourseLandingPage = ({ course, courseId, refreshCourse, onNext }) => {
     fetchCategories();
   }, []);
 
+  const initializedCourseId = useRef(null);
+
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!course) return;
+    if (initializedCourseId.current === (course._id || courseId)) return;
+
     setForm({
       categoryId: course.categoryId?._id || course.categoryId || "",
       title: course.title || "",
@@ -58,7 +62,8 @@ const CourseLandingPage = ({ course, courseId, refreshCourse, onNext }) => {
       level: course.level || "beginner",
       tags: course.tags?.join(", ") || "",
     });
-  }, [course]);
+    initializedCourseId.current = course._id || courseId;
+  }, [course, courseId]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   /* ── INPUT CHANGE ── */

@@ -342,7 +342,7 @@ const CoursePreview = () => {
             <div className="lg:hidden bg-white border border-[#d1d7dc] p-6 shadow-md select-none mt-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-extrabold text-[#1c1d1f] font-sans">
-                  ₹{currentPrice}
+                  {currentPrice > 0 ? `₹${currentPrice}` : "Free"}
                 </span>
                 {course.price > currentPrice ? (
                   <span className="text-sm text-slate-500 line-through font-sans">
@@ -734,7 +734,7 @@ const CoursePreview = () => {
               <div className="p-6">
                 <div className="flex items-baseline gap-3">
                   <span className="text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
-                    ₹{currentPrice}
+                    {currentPrice > 0 ? `₹${currentPrice}` : "Free"}
                   </span>
                   {course.price > currentPrice ? (
                     <span className="text-sm text-slate-500 line-through font-sans">

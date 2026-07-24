@@ -367,9 +367,11 @@ const InstructorCourseDetails = () => {
                 {/* Price & CTA panel */}
                 <div className="bg-white px-5 py-5 space-y-4">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    {course.discountPrice && course.discountPrice < course.price ? (
+                    {typeof course.discountPrice === 'number' && course.discountPrice < course.price ? (
                       <>
-                        <span className="text-2xl font-extrabold text-[#1c1d1f]">₹{course.discountPrice}</span>
+                        <span className="text-2xl font-extrabold text-[#1c1d1f]">
+                          {course.discountPrice > 0 ? `₹${course.discountPrice}` : "Free"}
+                        </span>
                         <span className="text-sm line-through text-[#6a6f73]">₹{course.price}</span>
                         <span className="text-xs text-green-600 font-bold">
                           {Math.round(((course.price - course.discountPrice) / course.price) * 100)}% off
@@ -512,13 +514,15 @@ const InstructorCourseDetails = () => {
                 icon={<AiFillDollarCircle size={18} className="text-[#6a6f73]" />}
                 label="Price"
                 value={
-                  course.discountPrice && course.discountPrice < course.price ? (
+                  typeof course.discountPrice === 'number' && course.discountPrice < course.price ? (
                     <span className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-semibold text-[#1c1d1f]">₹{course.discountPrice}</span>
+                      <span className="font-semibold text-[#1c1d1f]">
+                        {course.discountPrice > 0 ? `₹${course.discountPrice}` : "Free"}
+                      </span>
                       <span className="line-through text-xs text-[#6a6f73]">₹{course.price}</span>
                     </span>
                   ) : (
-                    `₹${course.price || 0}`
+                    course.price > 0 ? `₹${course.price}` : "Free"
                   )
                 }
               />

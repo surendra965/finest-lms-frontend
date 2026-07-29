@@ -1,122 +1,250 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgetPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile";
+import InstructorProfile from "./pages/InstructorProfile";
+import InstructorHome from "./pages/InstructorHome";
+import ProtectedRoute from "./components/ProtectedRoute";
+import CoursePreview from "./pages/CoursePreview";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import CreateCourseWizard from "./pages/CreateCourseWizard";
+import CreateCourseDetails from "./pages/CreateCourseDetails";
+import InstructorCourseDetails from "./pages/InstructorCourseDetails";
+import EditCourse from "./pages/EditCourse";
+import CategoryCourses from "./pages/CategoryCourses";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import PaymentHistory from "./pages/PaymentHistory";
+import PaymentDetail from "./pages/PaymentDetail";
+import Learning from "./pages/Learning";
+import LearningCourse from "./pages/LearningCourse";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminPendingCourses from "./pages/admin/AdminPendingCourses";
+import AdminCourseReview from "./pages/admin/AdminCourseReview";
+import AdminCreateCategory from "./pages/admin/AdminCreateCategory";
 
-function App() {
-  const [count, setCount] = useState(0)
+import ChangePassword from "./pages/ChangePassword";
+
+import VerifyCertificate from "./pages/VerifyCertificate";
+import AllCourses from "./pages/AllCourses";
+
+// ✅ Centralized route config
+const HIDE_NAVBAR_ROUTES = [
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/forgot-password",
+];
+
+function Layout() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
+
+  const shouldHideNavbar =
+    HIDE_NAVBAR_ROUTES.includes(location.pathname) ||
+    location.pathname.startsWith("/api/auth/reset-password") ||
+    // Hide navbar on the watch page (/learning/:id) but NOT on the dashboard (/learning)
+    (location.pathname.startsWith("/learning/") && location.pathname.length > "/learning/".length) ||
+    // Hide navbar on all admin pages — admin sidebar handles nav
+    location.pathname.startsWith("/admin");
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <ToastContainer position="top-right" className="mt-15" autoClose={3000} />
 
-      <div className="ticks"></div>
+      {!shouldHideNavbar && <Navbar />}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <Routes>
+        {/* PUBLIC ROUTES */}
+        <Route path="/" element={<Home />} />
+        <Route path="/api/public/courses/:id" element={<CoursePreview />} />
+        <Route path="/api/auth/login" element={<Login />} />
+        <Route path="/api/auth/register" element={<Register />} />
+        <Route path="/api/auth/forgot-password" element={<ForgotPassword />} />
+        <Route path="/api/auth/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/verify-certificate/:code" element={<VerifyCertificate />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+        {/* USER PROTECTED */}
+        <Route
+          path="/api/users/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute>
+              <ChangePassword />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* INSTRUCTOR ROUTES */}
+        <Route
+          path="/api/instructors/become-instructor"
+          element={
+            <ProtectedRoute>
+              <InstructorProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/instructor/home"
+          element={
+            <ProtectedRoute role="instructor">
+              <InstructorHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/instructor/create-course"
+          element={
+            <ProtectedRoute role="instructor">
+              <CreateCourseWizard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/instructor/course/create"
+          element={
+            <ProtectedRoute role="instructor">
+              <CreateCourseDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/instructor/course/:id"
+          element={
+            <ProtectedRoute role="instructor">
+              <InstructorCourseDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/instructor/course/:id/edit"
+          element={
+            <ProtectedRoute role="instructor">
+              <EditCourse />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/courses" element={<CategoryCourses />} />
+        <Route path="/courses/:slug" element={<CategoryCourses />} />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute role="student">
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute role="student">
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute role="student">
+              <PaymentHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments/:id"
+          element={
+            <ProtectedRoute role="student">
+              <PaymentDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning"
+          element={
+            <ProtectedRoute role="student">
+              <Learning />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/:id"
+          element={
+            <ProtectedRoute role="student">
+              <LearningCourse />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/all-courses"
+          element={
+            <ProtectedRoute>
+              <AllCourses />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ADMIN ROUTES */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/courses/pending"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminPendingCourses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/courses/:courseId/review"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCourseReview />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCreateCategory />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <Layout />
+    </BrowserRouter>
+  );
+}
+
+export default App;
